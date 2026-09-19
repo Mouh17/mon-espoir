@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Raleway:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Raleway:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600&family=Cairo:wght@400;500;600;700&display=swap');
 @import 'tailwindcss';
 
 @theme {
@@ -19,6 +19,17 @@
   --font-script: 'Great Vibes', cursive;
   --font-display: 'Raleway', sans-serif;
   --font-body: 'Poppins', sans-serif;
+}
+
+/* En arabe, on bascule vers une police adaptée (Cairo) pour tous les usages,
+   y compris les endroits qui utilisent normalement la police "script". */
+[dir='rtl'] {
+  --font-script: 'Cairo', sans-serif;
+  --font-display: 'Cairo', sans-serif;
+  --font-body: 'Cairo', sans-serif;
+}
+[dir='rtl'] * {
+  font-family: 'Cairo', sans-serif !important;
 }
 
 * {

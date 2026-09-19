@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import AdminPage from './pages/AdminPage'
 import { supabase } from './lib/supabaseClient'
+import { LangProvider, useLang, treatmentItemsData, credentialsData, galleryCasesData, offersData, packagesData } from './lib/i18n'
 
 import drEsmaImg from './imports/Mobesser_Esma.jpg'
 import beforeAfterChinImg from './imports/481234830_652878670583573_5156618047632366556_n.jpg'
@@ -64,15 +65,15 @@ function Logo({ size = 'md', light = false }: { size?: 'sm' | 'md' | 'lg'; light
 
 function Header({ currentPage, onNav }: { currentPage: Page; onNav: (p: Page) => void }) {
   const [menuOpen, setMenuOpen] = useState(false)
-  const [lang, setLang] = useState<'FR' | 'AR'>('FR')
+  const { lang, setLang, t } = useLang()
 
-  const links: { label: string; page: Page }[] = [
-    { label: 'Accueil', page: 'home' },
-    { label: 'Soins', page: 'treatments' },
-    { label: 'Galerie', page: 'gallery' },
-    { label: 'À propos', page: 'about' },
-    { label: 'Tarifs & Offres', page: 'pricing' },
-    { label: 'Contact', page: 'contact' },
+  const links: { labelKey: 'navHome' | 'navTreatments' | 'navGallery' | 'navAbout' | 'navPricing' | 'navContact'; page: Page }[] = [
+    { labelKey: 'navHome', page: 'home' },
+    { labelKey: 'navTreatments', page: 'treatments' },
+    { labelKey: 'navGallery', page: 'gallery' },
+    { labelKey: 'navAbout', page: 'about' },
+    { labelKey: 'navPricing', page: 'pricing' },
+    { labelKey: 'navContact', page: 'contact' },
   ]
 
   const go = (p: Page) => { onNav(p); setMenuOpen(false); window.scrollTo(0, 0) }
@@ -92,7 +93,7 @@ function Header({ currentPage, onNav }: { currentPage: Page; onNav: (p: Page) =>
               onClick={() => go(l.page)}
               className={`nav-link font-display text-sm font-medium tracking-wide transition-colors ${currentPage === l.page ? 'text-[#8B1A6B] active' : 'text-[#6B4C3B] hover:text-[#8B1A6B]'}`}
             >
-              {l.label}
+              {t(l.labelKey)}
             </button>
           ))}
         </nav>
@@ -114,7 +115,7 @@ function Header({ currentPage, onNav }: { currentPage: Page; onNav: (p: Page) =>
             onClick={() => go('book')}
             className="bg-[#8B1A6B] hover:bg-[#6E1356] text-white font-display font-semibold text-sm px-5 py-2.5 rounded-full transition-colors shadow-sm"
           >
-            Prendre RDV
+            {t('bookNowShort')}
           </button>
         </div>
 
@@ -139,14 +140,25 @@ function Header({ currentPage, onNav }: { currentPage: Page; onNav: (p: Page) =>
               onClick={() => go(l.page)}
               className={`font-display text-sm font-medium text-left py-1.5 border-b border-[#E8DDD0] last:border-0 ${currentPage === l.page ? 'text-[#8B1A6B]' : 'text-[#6B4C3B]'}`}
             >
-              {l.label}
+              {t(l.labelKey)}
             </button>
           ))}
+          <div className="flex rounded-full border border-[#C9A96E] overflow-hidden text-xs font-display font-semibold w-fit">
+            {(['FR', 'AR'] as const).map(l => (
+              <button
+                key={l}
+                onClick={() => setLang(l)}
+                className={`px-3 py-1 transition-colors ${lang === l ? 'bg-[#C9A96E] text-white' : 'text-[#C9A96E]'}`}
+              >
+                {l}
+              </button>
+            ))}
+          </div>
           <button
             onClick={() => go('book')}
             className="mt-2 bg-[#8B1A6B] text-white font-display font-semibold text-sm px-5 py-3 rounded-full"
           >
-            Prendre rendez-vous
+            {t('bookNowLong')}
           </button>
         </div>
       )}
@@ -157,6 +169,7 @@ function Header({ currentPage, onNav }: { currentPage: Page; onNav: (p: Page) =>
 // ─── Footer ────────────────────────────────────────────────────────────────
 
 function Footer({ onNav }: { onNav: (p: Page) => void }) {
+  const { t } = useLang()
   const go = (p: Page) => { onNav(p); window.scrollTo(0, 0) }
   return (
     <footer className="relative bg-[#2C1810] text-[#F5E6C8] overflow-hidden">
@@ -166,7 +179,7 @@ function Footer({ onNav }: { onNav: (p: Page) => void }) {
         <div>
           <Logo size="md" light />
           <p className="mt-4 text-sm text-[#C9A96E]/80 leading-relaxed font-body">
-            Médecine morpho-esthétique,<br />anti-âge & laser-thérapie.<br />Dr. Mobesser Esma
+            {t('footerTagline')}
           </p>
           <div className="flex gap-3 mt-5">
             <a href="#" aria-label="Facebook" className="w-9 h-9 rounded-full border border-[#C9A96E]/40 flex items-center justify-center hover:bg-[#C9A96E]/20 transition-colors">
@@ -179,16 +192,16 @@ function Footer({ onNav }: { onNav: (p: Page) => void }) {
         </div>
 
         <div>
-          <h4 className="font-display font-semibold text-[#C9A96E] tracking-wider text-xs uppercase mb-4">Liens rapides</h4>
+          <h4 className="font-display font-semibold text-[#C9A96E] tracking-wider text-xs uppercase mb-4">{t('footerQuickLinks')}</h4>
           <ul className="space-y-2">
-            {([['home','Accueil'],['treatments','Soins'],['gallery','Galerie'],['about','À propos'],['pricing','Tarifs & Offres'],['contact','Contact']] as [Page,string][]).map(([p,l]) => (
-              <li key={p}><button onClick={() => go(p)} className="text-sm text-[#F5E6C8]/70 hover:text-[#C9A96E] transition-colors font-body">{l}</button></li>
+            {([['home','navHome'],['treatments','navTreatments'],['gallery','navGallery'],['about','navAbout'],['pricing','navPricing'],['contact','navContact']] as [Page, 'navHome'|'navTreatments'|'navGallery'|'navAbout'|'navPricing'|'navContact'][]).map(([p,k]) => (
+              <li key={p}><button onClick={() => go(p)} className="text-sm text-[#F5E6C8]/70 hover:text-[#C9A96E] transition-colors font-body">{t(k)}</button></li>
             ))}
           </ul>
         </div>
 
         <div>
-          <h4 className="font-display font-semibold text-[#C9A96E] tracking-wider text-xs uppercase mb-4">Contact</h4>
+          <h4 className="font-display font-semibold text-[#C9A96E] tracking-wider text-xs uppercase mb-4">{t('footerContact')}</h4>
           <ul className="space-y-3 text-sm font-body text-[#F5E6C8]/70">
             <li className="flex items-start gap-2">
               <svg width="16" height="16" fill="none" stroke="#C9A96E" strokeWidth="1.5" viewBox="0 0 24 24" className="mt-0.5 flex-shrink-0"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 014.07 11.5 19.79 19.79 0 011.07 2.82 2 2 0 013.07 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L7.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
@@ -200,13 +213,13 @@ function Footer({ onNav }: { onNav: (p: Page) => void }) {
             </li>
             <li className="flex items-start gap-2">
               <svg width="16" height="16" fill="none" stroke="#C9A96E" strokeWidth="1.5" viewBox="0 0 24 24" className="mt-0.5 flex-shrink-0"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              Alger, Algérie
+              {t('footerAddress')}
             </li>
           </ul>
         </div>
       </div>
       <div className="border-t border-[#C9A96E]/20 py-4 text-center text-xs text-[#F5E6C8]/30 font-body">
-        © 2024 Mon Espoir · Tous droits réservés
+        {t('footerRights')}
       </div>
     </footer>
   )
@@ -215,6 +228,7 @@ function Footer({ onNav }: { onNav: (p: Page) => void }) {
 // ─── Page: Home ────────────────────────────────────────────────────────────
 
 function HomePage({ onNav }: { onNav: (p: Page) => void }) {
+  const { t, bi } = useLang()
   const go = (p: Page) => { onNav(p); window.scrollTo(0, 0) }
 
   const categories = [
@@ -224,8 +238,8 @@ function HomePage({ onNav }: { onNav: (p: Page) => void }) {
           <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
         </svg>
       ),
-      title: 'Morpho-esthétique',
-      desc: 'Remodelage du visage et du corps par des techniques non-invasives adaptées à votre morphologie unique.',
+      title: t('catMorpho'),
+      desc: t('catMorphoDesc'),
       page: 'treatments' as Page,
     },
     {
@@ -234,8 +248,8 @@ function HomePage({ onNav }: { onNav: (p: Page) => void }) {
           <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
         </svg>
       ),
-      title: 'Anti-âge',
-      desc: 'Traitements de pointe pour atténuer les rides, restaurer la fermeté et retrouver un teint lumineux.',
+      title: t('catAntiAge'),
+      desc: t('catAntiAgeDesc'),
       page: 'treatments' as Page,
     },
     {
@@ -244,16 +258,16 @@ function HomePage({ onNav }: { onNav: (p: Page) => void }) {
           <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
         </svg>
       ),
-      title: 'Laser-thérapie',
-      desc: 'Épilation définitive et traitements cutanés par laser Clarity de dernière génération.',
+      title: t('catLaser'),
+      desc: t('catLaserDesc'),
       page: 'treatments' as Page,
     },
   ]
 
   const offers = [
-    { name: 'Clarity Lumière', desc: 'Corps complet + bras offerts', badge: 'POPULAIRE' },
-    { name: 'Clarity Intima', desc: 'Zones intimes + maillot offert', badge: null },
-    { name: 'Clarity Peau de Soie', desc: 'Visage complet + lèvres offertes', badge: 'NOUVEAU' },
+    { name: 'Clarity Lumière', ...offersData[0] },
+    { name: 'Clarity Intima', ...offersData[1] },
+    { name: 'Clarity Peau de Soie', ...offersData[2] },
   ]
 
   return (
@@ -265,30 +279,30 @@ function HomePage({ onNav }: { onNav: (p: Page) => void }) {
         <div className="max-w-7xl mx-auto px-5 w-full grid grid-cols-1 lg:grid-cols-2 gap-10 py-16 items-center">
           <div className="relative z-10">
             <p className="font-display text-xs font-semibold tracking-[0.2em] text-[#C9A96E] uppercase mb-4">
-              Médecine morpho-esthétique · Anti-âge · Laser
+              {t('homeEyebrow')}
             </p>
             <h1
               style={{ fontFamily: "'Great Vibes', cursive" }}
               className="text-6xl md:text-7xl lg:text-8xl text-[#8B1A6B] leading-none mb-6"
             >
-              Révélez votre<br />éclat naturel
+              {t('homeH1Line1')}<br />{t('homeH1Line2')}
             </h1>
             <div className="divider-gold mb-6 w-40" />
             <p className="font-body text-[#6B4C3B] text-lg leading-relaxed mb-8 max-w-md">
-              Sous la direction du <strong>Dr. Mobesser Esma</strong>, notre clinique vous offre une approche personnalisée alliant expertise médicale et soin holistique.
+              {t('homeIntro')}
             </p>
             <div className="flex flex-wrap gap-3">
               <button
                 onClick={() => go('book')}
                 className="bg-[#8B1A6B] hover:bg-[#6E1356] text-white font-display font-semibold px-8 py-3.5 rounded-full transition-colors shadow-lg shadow-[#8B1A6B]/25"
               >
-                Prendre rendez-vous
+                {t('bookNowLong')}
               </button>
               <button
                 onClick={() => go('treatments')}
                 className="border border-[#C9A96E] text-[#8B1A6B] font-display font-semibold px-8 py-3.5 rounded-full hover:bg-[#C9A96E]/10 transition-colors"
               >
-                Découvrir nos soins
+                {t('discoverTreatments')}
               </button>
             </div>
           </div>
@@ -308,8 +322,8 @@ function HomePage({ onNav }: { onNav: (p: Page) => void }) {
                 <svg width="20" height="20" fill="none" stroke="#8B1A6B" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
               </div>
               <div>
-                <p className="font-display font-bold text-[#8B1A6B] text-sm">+500 Patientes</p>
-                <p className="font-body text-[#9E8E7A] text-xs">satisfaites</p>
+                <p className="font-display font-bold text-[#8B1A6B] text-sm">{t('badgePatients')}</p>
+                <p className="font-body text-[#9E8E7A] text-xs">{t('badgeSatisfied')}</p>
               </div>
             </div>
           </div>
@@ -320,8 +334,8 @@ function HomePage({ onNav }: { onNav: (p: Page) => void }) {
       <section className="pearl-bg py-20 px-5">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <p className="font-display text-xs font-semibold tracking-[0.2em] text-[#C9A96E] uppercase mb-2">Nos spécialités</p>
-            <h2 style={{ fontFamily: "'Great Vibes', cursive" }} className="text-5xl text-[#8B1A6B]">Nos soins</h2>
+            <p className="font-display text-xs font-semibold tracking-[0.2em] text-[#C9A96E] uppercase mb-2">{t('specialtiesEyebrow')}</p>
+            <h2 style={{ fontFamily: "'Great Vibes', cursive" }} className="text-5xl text-[#8B1A6B]">{t('ourTreatmentsTitle')}</h2>
             <GoldDivider />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -336,7 +350,7 @@ function HomePage({ onNav }: { onNav: (p: Page) => void }) {
                   onClick={() => go(c.page)}
                   className="mt-6 text-[#8B1A6B] font-display font-semibold text-sm flex items-center gap-1.5 hover:gap-3 transition-all"
                 >
-                  En savoir plus <span>→</span>
+                  {t('learnMore')} <span>→</span>
                 </button>
               </div>
             ))}
@@ -349,8 +363,8 @@ function HomePage({ onNav }: { onNav: (p: Page) => void }) {
         <BotanicalLeaf className="absolute -right-10 top-1/2 w-56 opacity-12 -translate-y-1/2" />
         <div className="max-w-7xl mx-auto relative">
           <div className="text-center mb-12">
-            <p className="font-display text-xs font-semibold tracking-[0.2em] text-[#C9A96E] uppercase mb-2">Promotions en cours</p>
-            <h2 style={{ fontFamily: "'Great Vibes', cursive" }} className="text-5xl text-[#8B1A6B]">Nos offres laser</h2>
+            <p className="font-display text-xs font-semibold tracking-[0.2em] text-[#C9A96E] uppercase mb-2">{t('offersEyebrow')}</p>
+            <h2 style={{ fontFamily: "'Great Vibes', cursive" }} className="text-5xl text-[#8B1A6B]">{t('laserOffersTitle')}</h2>
             <GoldDivider />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
@@ -358,14 +372,14 @@ function HomePage({ onNav }: { onNav: (p: Page) => void }) {
               <div key={o.name} className="card-hover bg-white rounded-2xl p-6 border border-[#E8DDD0] shadow-sm relative">
                 {o.badge && (
                   <span className="absolute top-4 right-4 bg-[#C9A96E] text-white text-[10px] font-display font-bold tracking-wider px-2.5 py-1 rounded-full">
-                    {o.badge}
+                    {bi(o.badge)}
                   </span>
                 )}
                 <div className="w-8 h-8 mb-4">
                   <svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="14" stroke="#8B1A6B" strokeWidth="1.5" strokeDasharray="4 2"/><circle cx="16" cy="16" r="5" fill="#8B1A6B" opacity="0.2"/><circle cx="16" cy="16" r="2" fill="#8B1A6B"/></svg>
                 </div>
                 <h3 className="font-display font-semibold text-[#2C1810] text-lg mb-1">{o.name}</h3>
-                <p className="font-body text-[#9E8E7A] text-sm">{o.desc}</p>
+                <p className="font-body text-[#9E8E7A] text-sm">{bi(o.desc)}</p>
               </div>
             ))}
           </div>
@@ -374,7 +388,7 @@ function HomePage({ onNav }: { onNav: (p: Page) => void }) {
               onClick={() => go('pricing')}
               className="border border-[#8B1A6B] text-[#8B1A6B] font-display font-semibold px-8 py-3 rounded-full hover:bg-[#8B1A6B] hover:text-white transition-colors"
             >
-              Voir tous les tarifs
+              {t('seeAllPricing')}
             </button>
           </div>
         </div>
@@ -388,16 +402,16 @@ function HomePage({ onNav }: { onNav: (p: Page) => void }) {
         </div>
         <div className="relative max-w-3xl mx-auto text-center">
           <h2 style={{ fontFamily: "'Great Vibes', cursive" }} className="text-5xl text-[#F5E6C8] mb-3">
-            Prête à commencer votre parcours ?
+            {t('ctaTitle')}
           </h2>
           <p className="font-body text-[#F5E6C8]/80 mb-7 text-base">
-            Prenez rendez-vous en ligne. Dr. Esma vous rappellera personnellement pour confirmer.
+            {t('ctaText')}
           </p>
           <button
             onClick={() => go('book')}
             className="bg-[#C9A96E] hover:bg-[#b8934d] text-[#2C1810] font-display font-bold px-10 py-4 rounded-full transition-colors shadow-lg"
           >
-            Réserver ma consultation
+            {t('ctaButton')}
           </button>
         </div>
       </section>
@@ -408,40 +422,11 @@ function HomePage({ onNav }: { onNav: (p: Page) => void }) {
 // ─── Page: Treatments ──────────────────────────────────────────────────────
 
 function TreatmentsPage({ onNav }: { onNav: (p: Page) => void }) {
+  const { t, bi } = useLang()
   const categories = [
-    {
-      title: 'Morpho-esthétique',
-      color: '#8B1A6B',
-      image: 'https://images.unsplash.com/photo-1570126737049-70d237c201de?w=600&h=400&fit=crop&auto=format',
-      treatments: [
-        { name: 'Mésothérapie visage', desc: 'Microinjections revitalisantes pour éclat et hydratation profonde.' },
-        { name: 'Remodelage du corps', desc: 'Techniques non-invasives pour sculpter et affiner la silhouette.' },
-        { name: 'Lifting sans chirurgie', desc: 'Raffermissement cutané par radiofrequence et ultrasons.' },
-        { name: 'Traitement double menton', desc: "Réduction et redéfinition de l'ovale du visage." },
-      ],
-    },
-    {
-      title: 'Anti-âge',
-      color: '#C9A96E',
-      image: 'https://images.unsplash.com/photo-1637851496670-2bdc6c548d27?w=600&h=400&fit=crop&auto=format',
-      treatments: [
-        { name: 'Injections Botox®', desc: "Lissage des rides d'expression pour un regard rafraîchi et naturel." },
-        { name: 'Acide hyaluronique', desc: 'Restauration du volume et redéfinition des contours du visage.' },
-        { name: 'Peeling chimique', desc: 'Renouvellement cellulaire intense pour un teint unifié et lumineux.' },
-        { name: 'PRP (Plasma Riche en Plaquettes)', desc: 'Régénération naturelle par les propres facteurs de croissance du patient.' },
-      ],
-    },
-    {
-      title: 'Laser-thérapie',
-      color: '#6E1356',
-      image: 'https://images.unsplash.com/photo-1713085085470-fba013d67e65?w=600&h=400&fit=crop&auto=format',
-      treatments: [
-        { name: 'Épilation laser Clarity', desc: 'Épilation définitive sur toutes les zones, toutes les carnations.' },
-        { name: 'Traitement taches pigmentaires', desc: 'Effacement des taches solaires et de vieillesse par laser.' },
-        { name: 'Rajeunissement cutané', desc: 'Stimulation du collagène et lissage global par laser fractionné.' },
-        { name: 'Traitement acné & cicatrices', desc: "Réduction des séquelles d'acné et remodelage des cicatrices." },
-      ],
-    },
+    { title: t('catMorpho'), color: '#8B1A6B', image: 'https://images.unsplash.com/photo-1570126737049-70d237c201de?w=600&h=400&fit=crop&auto=format', treatments: treatmentItemsData.morpho },
+    { title: t('catAntiAge'), color: '#C9A96E', image: 'https://images.unsplash.com/photo-1637851496670-2bdc6c548d27?w=600&h=400&fit=crop&auto=format', treatments: treatmentItemsData.antiAge },
+    { title: t('catLaser'), color: '#6E1356', image: 'https://images.unsplash.com/photo-1713085085470-fba013d67e65?w=600&h=400&fit=crop&auto=format', treatments: treatmentItemsData.laser },
   ]
 
   return (
@@ -449,11 +434,11 @@ function TreatmentsPage({ onNav }: { onNav: (p: Page) => void }) {
       {/* Hero */}
       <div className="bg-[#F2EBE0] py-16 px-5 text-center relative overflow-hidden">
         <BotanicalLeaf className="absolute -right-10 top-0 w-48 opacity-12" />
-        <p className="font-display text-xs font-semibold tracking-[0.2em] text-[#C9A96E] uppercase mb-2">Expertise & excellence</p>
-        <h1 style={{ fontFamily: "'Great Vibes', cursive" }} className="text-6xl text-[#8B1A6B]">Nos soins</h1>
+        <p className="font-display text-xs font-semibold tracking-[0.2em] text-[#C9A96E] uppercase mb-2">{t('treatmentsEyebrow')}</p>
+        <h1 style={{ fontFamily: "'Great Vibes', cursive" }} className="text-6xl text-[#8B1A6B]">{t('ourTreatmentsTitle')}</h1>
         <GoldDivider />
         <p className="font-body text-[#6B4C3B] max-w-xl mx-auto text-base leading-relaxed">
-          Chaque traitement est personnalisé selon votre morphologie, vos besoins et vos objectifs, par le Dr. Mobesser Esma.
+          {t('treatmentsIntro')}
         </p>
       </div>
 
@@ -469,14 +454,14 @@ function TreatmentsPage({ onNav }: { onNav: (p: Page) => void }) {
                 <img src={cat.image} alt={cat.title} className="w-full h-full object-cover" />
               </div>
               <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {cat.treatments.map(t => (
-                  <div key={t.name} className="card-hover bg-white rounded-xl p-5 border border-[#E8DDD0] shadow-sm">
+                {cat.treatments.map(tr => (
+                  <div key={bi(tr.name)} className="card-hover bg-white rounded-xl p-5 border border-[#E8DDD0] shadow-sm">
                     <div className="w-5 h-5 rounded-full mb-3" style={{ background: cat.color, opacity: 0.2 }} />
                     <div className="w-2 h-2 rounded-full -mt-7 mb-4" style={{ background: cat.color }} />
-                    <h3 className="font-display font-semibold text-[#2C1810] text-base mb-1.5">{t.name}</h3>
-                    <p className="font-body text-[#9E8E7A] text-sm leading-relaxed">{t.desc}</p>
+                    <h3 className="font-display font-semibold text-[#2C1810] text-base mb-1.5">{bi(tr.name)}</h3>
+                    <p className="font-body text-[#9E8E7A] text-sm leading-relaxed">{bi(tr.desc)}</p>
                     <button className="mt-3 text-sm font-display font-semibold hover:underline" style={{ color: cat.color }}>
-                      En savoir plus →
+                      {t('learnMore')} →
                     </button>
                   </div>
                 ))}
@@ -488,10 +473,10 @@ function TreatmentsPage({ onNav }: { onNav: (p: Page) => void }) {
 
       <div className="bg-[#8B1A6B] py-12 px-5 text-center">
         <p style={{ fontFamily: "'Great Vibes', cursive" }} className="text-4xl text-[#F5E6C8] mb-4">
-          Une question sur un traitement ?
+          {t('treatmentsBannerTitle')}
         </p>
         <button onClick={() => { onNav('contact'); window.scrollTo(0,0) }} className="bg-[#C9A96E] text-[#2C1810] font-display font-bold px-8 py-3.5 rounded-full transition-colors hover:bg-[#b8934d]">
-          Nous contacter
+          {t('contactUs')}
         </button>
       </div>
     </div>
@@ -501,20 +486,14 @@ function TreatmentsPage({ onNav }: { onNav: (p: Page) => void }) {
 // ─── Page: About ───────────────────────────────────────────────────────────
 
 function AboutPage() {
-  const credentials = [
-    "Diplôme d'État de Docteur en Médecine",
-    'DES en Médecine Esthétique & Morphologique',
-    'Certification Laser Clarity — Protocoles avancés',
-    'Formation internationale en techniques anti-âge',
-    'Membre de la SFME (Société Française de Médecine Esthétique)',
-  ]
+  const { t, bi } = useLang()
 
   return (
     <div className="min-h-screen">
       <div className="bg-[#F2EBE0] py-16 px-5 text-center relative overflow-hidden">
         <BotanicalLeaf className="absolute -left-10 top-0 w-48 opacity-12 rotate-45" />
-        <p className="font-display text-xs font-semibold tracking-[0.2em] text-[#C9A96E] uppercase mb-2">Notre équipe</p>
-        <h1 style={{ fontFamily: "'Great Vibes', cursive" }} className="text-6xl text-[#8B1A6B]">À propos</h1>
+        <p className="font-display text-xs font-semibold tracking-[0.2em] text-[#C9A96E] uppercase mb-2">{t('aboutEyebrow')}</p>
+        <h1 style={{ fontFamily: "'Great Vibes', cursive" }} className="text-6xl text-[#8B1A6B]">{t('aboutTitle')}</h1>
         <GoldDivider />
       </div>
 
@@ -532,40 +511,32 @@ function AboutPage() {
             </div>
             <div className="absolute bottom-6 left-6 right-6 bg-[#FAF6F0]/95 backdrop-blur-sm rounded-2xl p-4 border border-[#E8DDD0]">
               <p style={{ fontFamily: "'Great Vibes', cursive" }} className="text-2xl text-[#8B1A6B]">Dr. Mobesser Esma</p>
-              <p className="font-display text-xs font-semibold tracking-wider text-[#C9A96E] uppercase mt-0.5">Médecin morpho-esthétique</p>
+              <p className="font-display text-xs font-semibold tracking-wider text-[#C9A96E] uppercase mt-0.5">{t('drTitle')}</p>
             </div>
           </div>
 
           {/* Bio */}
           <div className="pt-4">
             <h2 className="font-display font-bold text-3xl text-[#2C1810] mb-2">Dr. Mobesser Esma</h2>
-            <p className="font-display text-sm font-semibold text-[#C9A96E] tracking-wider uppercase mb-6">Médecin Morpho-Esthétique · Fondatrice de Mon Espoir</p>
+            <p className="font-display text-sm font-semibold text-[#C9A96E] tracking-wider uppercase mb-6">{t('drSubtitle')}</p>
             <div className="divider-gold mb-7" />
             <div className="space-y-5 font-body text-[#6B4C3B] leading-relaxed text-[15px]">
-              <p>
-                Passionnée par la médecine esthétique depuis le début de sa carrière, le <strong className="text-[#2C1810]">Dr. Mobesser Esma</strong> a fondé Mon Espoir avec une conviction profonde : chaque patiente mérite une approche sur mesure, bienveillante et fondée sur les dernières avancées scientifiques.
-              </p>
-              <p>
-                Après des années de formation en France et à l'international, spécialisée en médecine morphologique et anti-âge, elle a développé une expertise reconnue dans les traitements injectables, la laser-thérapie et les techniques de remodelage corporel non-invasif.
-              </p>
-              <p>
-                Au cabinet Mon Espoir, son approche est toujours <em>personnalisée</em> : elle prend le temps d'écouter, d'analyser et de proposer des protocoles adaptés à la morphologie et aux attentes de chaque patiente — jamais de traitements standardisés.
-              </p>
-              <p>
-                Son philosophy : révéler la beauté naturelle, dans le respect et la durabilité, pour une confiance retrouvée.
-              </p>
+              <p>{t('bioP1')}</p>
+              <p>{t('bioP2')}</p>
+              <p>{t('bioP3')}</p>
+              <p>{t('bioP4')}</p>
             </div>
 
             <div className="mt-9">
               <h3 className="font-display font-semibold text-[#2C1810] text-lg mb-4 flex items-center gap-2">
                 <span className="w-8 h-px bg-[#C9A96E] block" />
-                Diplômes & certifications
+                {t('credentialsTitle')}
               </h3>
               <ul className="space-y-3">
-                {credentials.map(c => (
-                  <li key={c} className="flex items-start gap-3 font-body text-sm text-[#6B4C3B]">
+                {credentialsData.map(c => (
+                  <li key={bi(c)} className="flex items-start gap-3 font-body text-sm text-[#6B4C3B]">
                     <svg className="flex-shrink-0 mt-0.5" width="16" height="16" fill="none" stroke="#C9A96E" strokeWidth="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-                    {c}
+                    {bi(c)}
                   </li>
                 ))}
               </ul>
@@ -580,23 +551,24 @@ function AboutPage() {
 // ─── Page: Gallery ─────────────────────────────────────────────────────────
 
 function GalleryPage() {
+  const { t, bi } = useLang()
   const [selected, setSelected] = useState<number | null>(null)
 
   const cases = [
-    { cat: 'Morpho-esthétique', label: 'Remodelage du menton', before: 'Double menton marqué', after: 'Ovale affiné & redéfini', img: beforeAfterChinImg },
-    { cat: 'Anti-âge', label: 'Acide hyaluronique lèvres', before: 'Volume insuffisant', after: 'Lèvres harmonieuses & naturelles', img: beforeAfterLipsImg },
-    { cat: 'Morpho-esthétique', label: 'Remodelage du profil', before: 'Profil déséquilibré', after: 'Contours harmonisés', img: beforeAfterProfileImg },
+    { cat: t('catMorpho'), ...galleryCasesData[0], img: beforeAfterChinImg },
+    { cat: t('catAntiAge'), ...galleryCasesData[1], img: beforeAfterLipsImg },
+    { cat: t('catMorpho'), ...galleryCasesData[2], img: beforeAfterProfileImg },
   ]
 
   return (
     <div className="min-h-screen">
       <div className="bg-[#F2EBE0] py-16 px-5 text-center relative overflow-hidden">
         <BotanicalLeaf className="absolute -right-10 bottom-0 w-48 opacity-12" />
-        <p className="font-display text-xs font-semibold tracking-[0.2em] text-[#C9A96E] uppercase mb-2">Résultats réels</p>
-        <h1 style={{ fontFamily: "'Great Vibes', cursive" }} className="text-6xl text-[#8B1A6B]">Galerie</h1>
+        <p className="font-display text-xs font-semibold tracking-[0.2em] text-[#C9A96E] uppercase mb-2">{t('galleryEyebrow')}</p>
+        <h1 style={{ fontFamily: "'Great Vibes', cursive" }} className="text-6xl text-[#8B1A6B]">{t('galleryTitle')}</h1>
         <GoldDivider />
         <p className="font-body text-[#9E8E7A] text-sm italic">
-          Avec le consentement écrit des patientes. Résultats individuels variables.
+          {t('galleryConsent')}
         </p>
       </div>
 
@@ -609,24 +581,24 @@ function GalleryPage() {
               className="card-hover text-left rounded-2xl overflow-hidden border border-[#E8DDD0] shadow-sm group bg-white"
             >
               <div className="relative aspect-[4/5] bg-[#E8DDD0] overflow-hidden">
-                <img src={c.img} alt={c.label} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                <img src={c.img} alt={bi(c.label)} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#2C1810]/50 via-transparent to-transparent" />
                 <span className="absolute top-3 left-3 bg-[#8B1A6B] text-white text-xs font-display font-semibold px-2.5 py-1 rounded-full">
                   {c.cat}
                 </span>
                 <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                  <p className="font-display font-semibold text-sm">{c.label}</p>
+                  <p className="font-display font-semibold text-sm">{bi(c.label)}</p>
                 </div>
               </div>
               <div className="p-4 flex gap-4">
                 <div className="flex-1">
-                  <p className="font-display text-[10px] font-semibold tracking-wider text-[#9E8E7A] uppercase mb-0.5">Avant</p>
-                  <p className="font-body text-xs text-[#6B4C3B]">{c.before}</p>
+                  <p className="font-display text-[10px] font-semibold tracking-wider text-[#9E8E7A] uppercase mb-0.5">{t('before')}</p>
+                  <p className="font-body text-xs text-[#6B4C3B]">{bi(c.before)}</p>
                 </div>
                 <div className="w-px bg-[#E8DDD0]" />
                 <div className="flex-1">
-                  <p className="font-display text-[10px] font-semibold tracking-wider text-[#C9A96E] uppercase mb-0.5">Après</p>
-                  <p className="font-body text-xs text-[#6B4C3B]">{c.after}</p>
+                  <p className="font-display text-[10px] font-semibold tracking-wider text-[#C9A96E] uppercase mb-0.5">{t('after')}</p>
+                  <p className="font-body text-xs text-[#6B4C3B]">{bi(c.after)}</p>
                 </div>
               </div>
             </button>
@@ -642,24 +614,24 @@ function GalleryPage() {
         >
           <div className="bg-[#FAF6F0] rounded-3xl overflow-hidden max-w-lg w-full shadow-2xl" onClick={e => e.stopPropagation()}>
             <div className="relative aspect-[4/3] bg-[#E8DDD0]">
-              <img src={cases[selected].img} alt={cases[selected].label} className="w-full h-full object-cover" />
+              <img src={cases[selected].img} alt={bi(cases[selected].label)} className="w-full h-full object-cover" />
             </div>
             <div className="p-6">
               <span className="bg-[#8B1A6B]/10 text-[#8B1A6B] text-xs font-display font-semibold px-3 py-1 rounded-full">{cases[selected].cat}</span>
-              <h3 className="font-display font-bold text-[#2C1810] text-xl mt-3 mb-4">{cases[selected].label}</h3>
+              <h3 className="font-display font-bold text-[#2C1810] text-xl mt-3 mb-4">{bi(cases[selected].label)}</h3>
               <div className="flex gap-6">
                 <div className="flex-1 bg-[#F2EBE0] rounded-xl p-3">
-                  <p className="font-display text-[10px] font-semibold tracking-wider text-[#9E8E7A] uppercase mb-1">Avant</p>
-                  <p className="font-body text-sm text-[#6B4C3B]">{cases[selected].before}</p>
+                  <p className="font-display text-[10px] font-semibold tracking-wider text-[#9E8E7A] uppercase mb-1">{t('before')}</p>
+                  <p className="font-body text-sm text-[#6B4C3B]">{bi(cases[selected].before)}</p>
                 </div>
                 <div className="flex-1 bg-[#8B1A6B]/8 rounded-xl p-3">
-                  <p className="font-display text-[10px] font-semibold tracking-wider text-[#C9A96E] uppercase mb-1">Après</p>
-                  <p className="font-body text-sm text-[#6B4C3B]">{cases[selected].after}</p>
+                  <p className="font-display text-[10px] font-semibold tracking-wider text-[#C9A96E] uppercase mb-1">{t('after')}</p>
+                  <p className="font-body text-sm text-[#6B4C3B]">{bi(cases[selected].after)}</p>
                 </div>
               </div>
-              <p className="mt-4 text-[10px] font-body text-[#9E8E7A] italic">Résultat publié avec consentement écrit. Résultats individuels variables.</p>
+              <p className="mt-4 text-[10px] font-body text-[#9E8E7A] italic">{t('lightboxConsent')}</p>
               <button onClick={() => setSelected(null)} className="mt-4 w-full bg-[#8B1A6B] text-white font-display font-semibold py-2.5 rounded-full hover:bg-[#6E1356] transition-colors">
-                Fermer
+                {t('close')}
               </button>
             </div>
           </div>
@@ -672,54 +644,23 @@ function GalleryPage() {
 // ─── Page: Pricing ─────────────────────────────────────────────────────────
 
 function PricingPage({ onNav }: { onNav: (p: Page) => void }) {
+  const { t, bi } = useLang()
   const packages = [
-    {
-      name: 'Clarity Lumière',
-      subtitle: 'Corps & zones mixtes',
-      badge: 'POPULAIRE',
-      img: promoLumiereImg,
-      zones: ['Jambes complètes', 'Maillot', 'Aisselles', 'Sillons inter-fessier'],
-      offert: ['Lèvre supérieure (Moustache)', 'Ligne médiane'],
-      highlight: true,
-    },
-    {
-      name: 'Clarity Intima',
-      subtitle: 'Zones intimes',
-      badge: null,
-      img: promoIntimaImg,
-      zones: ['Aisselles', 'Maillot', 'Sillon inter-fessier'],
-      offert: ['Ligne médiane', 'Lèvre supérieure (Moustache)'],
-      highlight: false,
-    },
-    {
-      name: 'Clarity Douceur',
-      subtitle: 'Demi-corps',
-      badge: null,
-      img: promoDouceurImg,
-      zones: ['Demi-jambes', 'Maillot', 'Aisselles', 'Sillons inter-fessier'],
-      offert: ['Lèvre supérieure (Moustache)', 'Ligne médiane'],
-      highlight: false,
-    },
-    {
-      name: 'Clarity Peau de Soie',
-      subtitle: 'Corps complet',
-      badge: 'BEST VALUE',
-      img: promoPeauSoieImg,
-      zones: ['Demi-bras', 'Demi-jambes', 'Maillot', 'Aisselles', 'Sillons inter-fessier'],
-      offert: ['Lèvre supérieure (Moustache)', 'Ligne médiane'],
-      highlight: false,
-    },
+    { name: 'Clarity Lumière', img: promoLumiereImg, highlight: true, ...packagesData[0] },
+    { name: 'Clarity Intima', img: promoIntimaImg, highlight: false, ...packagesData[1] },
+    { name: 'Clarity Douceur', img: promoDouceurImg, highlight: false, ...packagesData[2] },
+    { name: 'Clarity Peau de Soie', img: promoPeauSoieImg, highlight: false, ...packagesData[3] },
   ]
 
   return (
     <div className="min-h-screen">
       <div className="bg-[#F2EBE0] py-16 px-5 text-center relative overflow-hidden">
         <BotanicalLeaf className="absolute -left-10 top-0 w-48 opacity-12 rotate-12" />
-        <p className="font-display text-xs font-semibold tracking-[0.2em] text-[#C9A96E] uppercase mb-2">Transparence & confiance</p>
-        <h1 style={{ fontFamily: "'Great Vibes', cursive" }} className="text-6xl text-[#8B1A6B]">Tarifs & Offres</h1>
+        <p className="font-display text-xs font-semibold tracking-[0.2em] text-[#C9A96E] uppercase mb-2">{t('pricingEyebrow')}</p>
+        <h1 style={{ fontFamily: "'Great Vibes', cursive" }} className="text-6xl text-[#8B1A6B]">{t('pricingTitle')}</h1>
         <GoldDivider />
         <p className="font-body text-[#9E8E7A] text-sm max-w-md mx-auto">
-          Nos forfaits laser évoluent selon les saisons. Contactez-nous pour connaître les disponibilités actuelles.
+          {t('pricingIntro')}
         </p>
       </div>
 
@@ -728,9 +669,9 @@ function PricingPage({ onNav }: { onNav: (p: Page) => void }) {
         <div className="mb-10">
           <h2 className="font-display font-bold text-2xl text-[#2C1810] mb-2 flex items-center gap-3">
             <svg width="22" height="22" fill="none" viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" stroke="#8B1A6B" strokeWidth="1.5" strokeDasharray="4 2"/><circle cx="16" cy="16" r="5" fill="#8B1A6B" opacity="0.2"/><circle cx="16" cy="16" r="2" fill="#8B1A6B"/></svg>
-            Forfaits Épilation Laser Clarity
+            {t('packagesTitle')}
           </h2>
-          <p className="font-body text-sm text-[#9E8E7A] mb-8">Technologie laser Clarity — efficace sur toutes les carnations</p>
+          <p className="font-body text-sm text-[#9E8E7A] mb-8">{t('packagesSubtitle')}</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mb-14">
@@ -741,7 +682,7 @@ function PricingPage({ onNav }: { onNav: (p: Page) => void }) {
             >
               {pkg.badge && (
                 <span className={`absolute top-3 right-3 z-10 text-[10px] font-display font-bold tracking-wider px-2.5 py-1 rounded-full shadow ${pkg.highlight ? 'bg-[#C9A96E] text-[#2C1810]' : 'bg-[#8B1A6B] text-white'}`}>
-                  {pkg.badge}
+                  {bi(pkg.badge)}
                 </span>
               )}
               {/* Promo image */}
@@ -750,29 +691,29 @@ function PricingPage({ onNav }: { onNav: (p: Page) => void }) {
               </div>
               <div className={`p-5 flex flex-col flex-1 ${pkg.highlight ? 'bg-[#8B1A6B]' : 'bg-white'}`}>
                 <div className={`text-xs font-display font-semibold tracking-wider uppercase mb-1 ${pkg.highlight ? 'text-[#F5E6C8]/70' : 'text-[#C9A96E]'}`}>
-                  {pkg.subtitle}
+                  {bi(pkg.subtitle)}
                 </div>
                 <h3 style={{ fontFamily: "'Great Vibes', cursive" }} className={`text-3xl mb-4 ${pkg.highlight ? 'text-[#F5E6C8]' : 'text-[#8B1A6B]'}`}>
                   {pkg.name}
                 </h3>
                 <div className={`text-[10px] font-display font-semibold tracking-wider uppercase mb-2 ${pkg.highlight ? 'text-[#F5E6C8]/60' : 'text-[#9E8E7A]'}`}>
-                  Zones incluses
+                  {t('zonesIncluded')}
                 </div>
                 <ul className="space-y-1.5 mb-4 flex-1">
                   {pkg.zones.map(z => (
-                    <li key={z} className={`flex items-center gap-2 text-sm font-body ${pkg.highlight ? 'text-[#F5E6C8]/90' : 'text-[#6B4C3B]'}`}>
+                    <li key={bi(z)} className={`flex items-center gap-2 text-sm font-body ${pkg.highlight ? 'text-[#F5E6C8]/90' : 'text-[#6B4C3B]'}`}>
                       <svg width="12" height="12" fill="none" stroke={pkg.highlight ? '#C9A96E' : '#8B1A6B'} strokeWidth="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-                      {z}
+                      {bi(z)}
                     </li>
                   ))}
                 </ul>
                 {pkg.offert.length > 0 && (
                   <div className={`rounded-xl p-3 mb-4 ${pkg.highlight ? 'bg-[#F5E6C8]/10' : 'bg-[#8B1A6B]/5'}`}>
                     <p className="text-[10px] font-display font-bold tracking-wider uppercase mb-1.5 text-[#C9A96E]">
-                      🎁 Offert
+                      {t('freeGift')}
                     </p>
                     {pkg.offert.map(o => (
-                      <p key={o} className={`text-xs font-body ${pkg.highlight ? 'text-[#F5E6C8]/80' : 'text-[#6B4C3B]'}`}>· {o}</p>
+                      <p key={bi(o)} className={`text-xs font-body ${pkg.highlight ? 'text-[#F5E6C8]/80' : 'text-[#6B4C3B]'}`}>· {bi(o)}</p>
                     ))}
                   </div>
                 )}
@@ -780,7 +721,7 @@ function PricingPage({ onNav }: { onNav: (p: Page) => void }) {
                   onClick={() => { onNav('book'); window.scrollTo(0,0) }}
                   className={`w-full py-3 rounded-full font-display font-semibold text-sm transition-colors ${pkg.highlight ? 'bg-[#C9A96E] text-[#2C1810] hover:bg-[#b8934d]' : 'border border-[#8B1A6B] text-[#8B1A6B] hover:bg-[#8B1A6B] hover:text-white'}`}
                 >
-                  Réserver ce forfait
+                  {t('bookThisPackage')}
                 </button>
               </div>
             </div>
@@ -789,7 +730,7 @@ function PricingPage({ onNav }: { onNav: (p: Page) => void }) {
 
         <div className="bg-[#F2EBE0] rounded-2xl p-6 border border-[#E8DDD0] text-center">
           <p className="font-body text-sm text-[#6B4C3B]">
-            💡 <strong>Les tarifs sont disponibles sur demande.</strong> Chaque forfait est adapté à votre bilan initial. Contactez-nous pour un devis personnalisé.
+            💡 {t('pricingNote')}
           </p>
         </div>
       </div>
@@ -800,6 +741,7 @@ function PricingPage({ onNav }: { onNav: (p: Page) => void }) {
 // ─── Page: Contact ─────────────────────────────────────────────────────────
 
 function ContactPage() {
+  const { t } = useLang()
   const [form, setForm] = useState({ prenom: '', nom: '', email: '', telephone: '', objet: "Demande d'information", message: '' })
   const [envoiEnCours, setEnvoiEnCours] = useState(false)
   const [erreurEnvoi, setErreurEnvoi] = useState('')
@@ -829,72 +771,93 @@ function ContactPage() {
 
     if (error) {
       console.error(error)
-      setErreurEnvoi("Une erreur est survenue. Merci de réessayer, ou de nous appeler directement.")
+      setErreurEnvoi(t('errorGeneric'))
       return
     }
 
     setEnvoye(true)
   }
 
+  const infoItems = [
+    {
+      icon: <svg width="20" height="20" fill="none" stroke="#8B1A6B" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 014.07 11.5 19.79 19.79 0 011.07 2.82 2 2 0 013.07 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L7.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>,
+      title: t('callUs'),
+      content: '0699 99 20 07',
+      sub: t('callUsHours'),
+    },
+    {
+      icon: <svg width="20" height="20" fill="none" stroke="#8B1A6B" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>,
+      title: t('labelEmail'),
+      content: 'contact@monespoir.dz',
+      sub: t('emailUsSub'),
+    },
+    {
+      icon: <svg width="20" height="20" fill="none" stroke="#8B1A6B" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>,
+      title: t('ourAddress'),
+      content: t('footerAddress'),
+      sub: t('addressSub'),
+    },
+  ]
+
   return (
     <div className="min-h-screen">
       <div className="bg-[#F2EBE0] py-16 px-5 text-center relative overflow-hidden">
         <BotanicalLeaf className="absolute -right-8 top-0 w-48 opacity-12" />
-        <h1 style={{ fontFamily: "'Great Vibes', cursive" }} className="text-6xl text-[#8B1A6B]">Contactez-nous</h1>
+        <h1 style={{ fontFamily: "'Great Vibes', cursive" }} className="text-6xl text-[#8B1A6B]">{t('contactTitle')}</h1>
         <GoldDivider />
         <p className="font-body text-[#6B4C3B] max-w-sm mx-auto text-sm">
-          Notre équipe vous répond dans les plus brefs délais.
+          {t('contactIntro')}
         </p>
       </div>
 
       <div className="max-w-6xl mx-auto px-5 py-14 grid grid-cols-1 lg:grid-cols-3 gap-10">
         {/* Form */}
         <div className="lg:col-span-2 bg-white rounded-2xl p-8 border border-[#E8DDD0] shadow-sm">
-          <h2 className="font-display font-bold text-2xl text-[#2C1810] mb-6">Envoyez-nous un message</h2>
+          <h2 className="font-display font-bold text-2xl text-[#2C1810] mb-6">{t('sendMessageTitle')}</h2>
           {envoye ? (
             <div className="text-center py-10">
               <div className="text-4xl mb-3">🌿</div>
-              <p className="font-display font-semibold text-lg text-[#8B1A6B] mb-1">Merci !</p>
-              <p className="font-body text-sm text-[#6B4C3B]">Votre message a bien été reçu, nous vous répondrons rapidement.</p>
+              <p className="font-display font-semibold text-lg text-[#8B1A6B] mb-1">{t('thankYou')}</p>
+              <p className="font-body text-sm text-[#6B4C3B]">{t('messageSentText')}</p>
             </div>
           ) : (
           <form className="space-y-5" onSubmit={handleSubmit}>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="font-display text-xs font-semibold tracking-wider text-[#9E8E7A] uppercase block mb-1.5">Prénom</label>
+                <label className="font-display text-xs font-semibold tracking-wider text-[#9E8E7A] uppercase block mb-1.5">{t('labelFirstName')}</label>
                 <input type="text" required {...champ('prenom')} className="w-full border border-[#E8DDD0] rounded-xl px-4 py-3 text-sm font-body text-[#2C1810] bg-[#FAF6F0]" placeholder="Yasmine" />
               </div>
               <div>
-                <label className="font-display text-xs font-semibold tracking-wider text-[#9E8E7A] uppercase block mb-1.5">Nom</label>
+                <label className="font-display text-xs font-semibold tracking-wider text-[#9E8E7A] uppercase block mb-1.5">{t('labelLastName')}</label>
                 <input type="text" required {...champ('nom')} className="w-full border border-[#E8DDD0] rounded-xl px-4 py-3 text-sm font-body text-[#2C1810] bg-[#FAF6F0]" placeholder="Bouziane" />
               </div>
             </div>
             <div>
-              <label className="font-display text-xs font-semibold tracking-wider text-[#9E8E7A] uppercase block mb-1.5">Email</label>
+              <label className="font-display text-xs font-semibold tracking-wider text-[#9E8E7A] uppercase block mb-1.5">{t('labelEmail')}</label>
               <input type="email" {...champ('email')} className="w-full border border-[#E8DDD0] rounded-xl px-4 py-3 text-sm font-body text-[#2C1810] bg-[#FAF6F0]" placeholder="yasmine@email.com" />
             </div>
             <div>
               <label className="font-display text-xs font-semibold tracking-wider text-[#9E8E7A] uppercase block mb-1.5">
-                Téléphone <span className="text-[#C9A96E]">*</span>
+                {t('labelPhone')} <span className="text-[#C9A96E]">*</span>
               </label>
               <input type="tel" required {...champ('telephone')} className="w-full border border-[#E8DDD0] rounded-xl px-4 py-3 text-sm font-body text-[#2C1810] bg-[#FAF6F0]" placeholder="0699 99 20 07" />
             </div>
             <div>
-              <label className="font-display text-xs font-semibold tracking-wider text-[#9E8E7A] uppercase block mb-1.5">Objet</label>
+              <label className="font-display text-xs font-semibold tracking-wider text-[#9E8E7A] uppercase block mb-1.5">{t('labelSubject')}</label>
               <select {...champ('objet')} className="w-full border border-[#E8DDD0] rounded-xl px-4 py-3 text-sm font-body text-[#6B4C3B] bg-[#FAF6F0] appearance-none">
-                <option>Demande d'information</option>
-                <option>Prise de rendez-vous</option>
-                <option>Question sur un soin</option>
-                <option>Autre</option>
+                <option value="Demande d'information">{t('optInfoRequest')}</option>
+                <option value="Prise de rendez-vous">{t('optAppointment')}</option>
+                <option value="Question sur un soin">{t('optTreatmentQuestion')}</option>
+                <option value="Autre">{t('optOther')}</option>
               </select>
             </div>
             <div>
-              <label className="font-display text-xs font-semibold tracking-wider text-[#9E8E7A] uppercase block mb-1.5">Message</label>
+              <label className="font-display text-xs font-semibold tracking-wider text-[#9E8E7A] uppercase block mb-1.5">{t('labelMessage')}</label>
               <textarea rows={4} {...champ('message')} className="w-full border border-[#E8DDD0] rounded-xl px-4 py-3 text-sm font-body text-[#2C1810] bg-[#FAF6F0] resize-none" placeholder="Bonjour, je souhaite en savoir plus sur..." />
             </div>
             {erreurEnvoi && <p className="text-sm" style={{ color: '#B23A3A' }}>{erreurEnvoi}</p>}
             <button type="submit" disabled={envoiEnCours} className="w-full bg-[#8B1A6B] hover:bg-[#6E1356] text-white font-display font-semibold py-3.5 rounded-full transition-colors shadow-md shadow-[#8B1A6B]/20 disabled:opacity-50">
-              {envoiEnCours ? 'Envoi...' : 'Envoyer le message'}
+              {envoiEnCours ? t('sending') : t('sendMessage')}
             </button>
           </form>
           )}
@@ -902,26 +865,7 @@ function ContactPage() {
 
         {/* Info */}
         <div className="space-y-5">
-          {[
-            {
-              icon: <svg width="20" height="20" fill="none" stroke="#8B1A6B" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 014.07 11.5 19.79 19.79 0 011.07 2.82 2 2 0 013.07 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L7.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>,
-              title: 'Appelez-nous',
-              content: '0699 99 20 07',
-              sub: 'Lun – Sam · 9h – 19h',
-            },
-            {
-              icon: <svg width="20" height="20" fill="none" stroke="#8B1A6B" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>,
-              title: 'Email',
-              content: 'contact@monespoir.dz',
-              sub: 'Réponse sous 24h',
-            },
-            {
-              icon: <svg width="20" height="20" fill="none" stroke="#8B1A6B" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>,
-              title: 'Notre adresse',
-              content: 'Alger, Algérie',
-              sub: 'Accès facile, parking disponible',
-            },
-          ].map(item => (
+          {infoItems.map(item => (
             <div key={item.title} className="bg-white rounded-2xl p-5 border border-[#E8DDD0] shadow-sm flex gap-4">
               <div className="w-10 h-10 bg-[#8B1A6B]/8 rounded-xl flex items-center justify-center flex-shrink-0">
                 {item.icon}
@@ -938,13 +882,13 @@ function ContactPage() {
           <div className="rounded-2xl overflow-hidden border border-[#E8DDD0] shadow-sm bg-[#E8DDD0] aspect-video flex items-center justify-center relative">
             <div className="text-center">
               <svg width="32" height="32" fill="none" stroke="#8B1A6B" strokeWidth="1.5" viewBox="0 0 24 24" className="mx-auto mb-2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              <p className="font-body text-xs text-[#9E8E7A]">Carte interactive</p>
+              <p className="font-body text-xs text-[#9E8E7A]">{t('interactiveMap')}</p>
             </div>
           </div>
 
           {/* Social */}
           <div className="bg-white rounded-2xl p-5 border border-[#E8DDD0] shadow-sm">
-            <p className="font-display font-semibold text-sm text-[#2C1810] mb-3">Suivez-nous</p>
+            <p className="font-display font-semibold text-sm text-[#2C1810] mb-3">{t('followUs')}</p>
             <div className="flex gap-3">
               <a href="#" className="flex-1 flex items-center justify-center gap-2 border border-[#E8DDD0] rounded-xl py-2.5 hover:bg-[#8B1A6B]/5 transition-colors group">
                 <svg width="16" height="16" fill="#8B1A6B" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
@@ -965,6 +909,7 @@ function ContactPage() {
 // ─── Page: Book ────────────────────────────────────────────────────────────
 
 function BookPage() {
+  const { t, bi } = useLang()
   const [step, setStep] = useState(1)
   const [form, setForm] = useState({ prenom: '', nom: '', telephone: '', email: '', date: '' })
   const [service, setService] = useState<string | null>(null)
@@ -978,9 +923,9 @@ function BookPage() {
   })
 
   const services = [
-    { cat: 'Morpho-esthétique', items: ['Mésothérapie visage', 'Remodelage corps', 'Lifting sans chirurgie', 'Traitement double menton'] },
-    { cat: 'Anti-âge', items: ['Injections Botox®', 'Acide hyaluronique', 'Peeling chimique', 'PRP'] },
-    { cat: 'Laser-thérapie', items: ['Épilation laser Clarity', 'Traitement taches pigmentaires', 'Rajeunissement cutané', 'Traitement acné & cicatrices'] },
+    { cat: t('catMorpho'), items: treatmentItemsData.morpho },
+    { cat: t('catAntiAge'), items: treatmentItemsData.antiAge },
+    { cat: t('catLaser'), items: treatmentItemsData.laser },
   ]
 
   const handleConfirmer = async () => {
@@ -1001,7 +946,7 @@ function BookPage() {
 
     if (error) {
       console.error(error)
-      setErreurEnvoi("Une erreur est survenue. Merci de réessayer, ou de nous appeler directement.")
+      setErreurEnvoi(t('errorGeneric'))
       return
     }
 
@@ -1015,21 +960,21 @@ function BookPage() {
         <div className="lg:col-span-2 pt-4">
           <BotanicalLeaf className="w-24 mb-4 opacity-40" />
           <h1 style={{ fontFamily: "'Great Vibes', cursive" }} className="text-5xl text-[#8B1A6B] mb-4 leading-snug">
-            Prendre rendez-vous en ligne
+            {t('bookTitle')}
           </h1>
           <div className="divider-gold mb-5 w-32" />
           <p className="font-body text-[#6B4C3B] text-sm leading-relaxed">
-            Après votre demande, nous vous appellerons ou vous enverrons un email pour confirmer la date et l'heure de votre rendez-vous.
+            {t('bookIntro')}
           </p>
           <div className="mt-8 space-y-4">
             <div className="flex items-center gap-3">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-display font-bold transition-colors ${step >= 1 ? 'bg-[#8B1A6B] text-white' : 'bg-[#E8DDD0] text-[#9E8E7A]'}`}>1</div>
-              <span className={`font-display text-sm font-medium ${step >= 1 ? 'text-[#8B1A6B]' : 'text-[#9E8E7A]'}`}>Informations de contact</span>
+              <span className={`font-display text-sm font-medium ${step >= 1 ? 'text-[#8B1A6B]' : 'text-[#9E8E7A]'}`}>{t('stepContactInfo')}</span>
             </div>
             <div className="ml-4 w-px h-6 bg-[#C9A96E]/40" />
             <div className="flex items-center gap-3">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-display font-bold transition-colors ${step >= 2 ? 'bg-[#8B1A6B] text-white' : 'bg-[#E8DDD0] text-[#9E8E7A]'}`}>2</div>
-              <span className={`font-display text-sm font-medium ${step >= 2 ? 'text-[#8B1A6B]' : 'text-[#9E8E7A]'}`}>Choisir un soin</span>
+              <span className={`font-display text-sm font-medium ${step >= 2 ? 'text-[#8B1A6B]' : 'text-[#9E8E7A]'}`}>{t('stepChooseTreatment')}</span>
             </div>
           </div>
         </div>
@@ -1038,13 +983,13 @@ function BookPage() {
         <div className="lg:col-span-3 bg-white rounded-3xl shadow-xl shadow-[#8B1A6B]/8 border border-[#E8DDD0] overflow-hidden">
           {/* Tab bar */}
           <div className="flex border-b border-[#E8DDD0]">
-            {[{ n: 1, label: 'Contact' }, { n: 2, label: 'Soin' }].map(t => (
+            {[{ n: 1, label: t('tabContact') }, { n: 2, label: t('tabTreatment') }].map(tb => (
               <button
-                key={t.n}
-                onClick={() => t.n < step || step === 2 ? setStep(t.n) : undefined}
-                className={`flex-1 py-4 font-display text-sm font-semibold transition-colors ${step === t.n ? 'text-[#8B1A6B] border-b-2 border-[#8B1A6B] -mb-px' : 'text-[#9E8E7A]'}`}
+                key={tb.n}
+                onClick={() => tb.n < step || step === 2 ? setStep(tb.n) : undefined}
+                className={`flex-1 py-4 font-display text-sm font-semibold transition-colors ${step === tb.n ? 'text-[#8B1A6B] border-b-2 border-[#8B1A6B] -mb-px' : 'text-[#9E8E7A]'}`}
               >
-                {t.label}
+                {tb.label}
               </button>
             ))}
           </div>
@@ -1054,37 +999,37 @@ function BookPage() {
               <form className="space-y-5" onSubmit={e => { e.preventDefault(); setStep(2) }}>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="font-display text-xs font-semibold tracking-wider text-[#9E8E7A] uppercase block mb-1.5">Prénom</label>
+                    <label className="font-display text-xs font-semibold tracking-wider text-[#9E8E7A] uppercase block mb-1.5">{t('labelFirstName')}</label>
                     <input type="text" required {...champ('prenom')} className="w-full border border-[#E8DDD0] rounded-xl px-4 py-3 text-sm font-body bg-[#FAF6F0]" placeholder="Yasmine" />
                   </div>
                   <div>
-                    <label className="font-display text-xs font-semibold tracking-wider text-[#9E8E7A] uppercase block mb-1.5">Nom</label>
+                    <label className="font-display text-xs font-semibold tracking-wider text-[#9E8E7A] uppercase block mb-1.5">{t('labelLastName')}</label>
                     <input type="text" required {...champ('nom')} className="w-full border border-[#E8DDD0] rounded-xl px-4 py-3 text-sm font-body bg-[#FAF6F0]" placeholder="Bouziane" />
                   </div>
                 </div>
                 <div>
                   <label className="font-display text-xs font-semibold tracking-wider text-[#9E8E7A] uppercase block mb-1.5">
-                    Téléphone <span className="text-[#C9A96E]">*</span>
+                    {t('labelPhone')} <span className="text-[#C9A96E]">*</span>
                   </label>
                   <input type="tel" required {...champ('telephone')} className="w-full border border-[#E8DDD0] rounded-xl px-4 py-3 text-sm font-body bg-[#FAF6F0]" placeholder="0699 99 20 07" />
                 </div>
                 <div>
-                  <label className="font-display text-xs font-semibold tracking-wider text-[#9E8E7A] uppercase block mb-1.5">Email</label>
+                  <label className="font-display text-xs font-semibold tracking-wider text-[#9E8E7A] uppercase block mb-1.5">{t('labelEmail')}</label>
                   <input type="email" {...champ('email')} className="w-full border border-[#E8DDD0] rounded-xl px-4 py-3 text-sm font-body bg-[#FAF6F0]" placeholder="yasmine@email.com" />
                 </div>
                 <div>
-                  <label className="font-display text-xs font-semibold tracking-wider text-[#9E8E7A] uppercase block mb-1.5">Disponibilité souhaitée</label>
+                  <label className="font-display text-xs font-semibold tracking-wider text-[#9E8E7A] uppercase block mb-1.5">{t('labelAvailability')}</label>
                   <input type="date" {...champ('date')} className="w-full border border-[#E8DDD0] rounded-xl px-4 py-3 text-sm font-body bg-[#FAF6F0] text-[#6B4C3B]" />
                 </div>
                 <button type="submit" className="w-full bg-[#8B1A6B] hover:bg-[#6E1356] text-white font-display font-semibold py-3.5 rounded-full transition-colors shadow-md shadow-[#8B1A6B]/20 flex items-center justify-center gap-2">
-                  Étape suivante <span className="text-lg">→</span>
+                  {t('nextStep')} <span className="text-lg">→</span>
                 </button>
               </form>
             )}
 
             {step === 2 && !envoye && (
               <div>
-                <p className="font-body text-sm text-[#6B4C3B] mb-6">Sélectionnez le soin pour lequel vous souhaitez prendre rendez-vous.</p>
+                <p className="font-body text-sm text-[#6B4C3B] mb-6">{t('chooseServiceIntro')}</p>
                 <div className="space-y-5">
                   {services.map(sc => (
                     <div key={sc.cat}>
@@ -1092,11 +1037,11 @@ function BookPage() {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {sc.items.map(item => (
                           <button
-                            key={item}
-                            onClick={() => setService(item)}
-                            className={`text-left px-4 py-3 rounded-xl border text-sm font-body transition-all ${service === item ? 'border-[#8B1A6B] bg-[#8B1A6B]/8 text-[#8B1A6B] font-medium' : 'border-[#E8DDD0] text-[#6B4C3B] hover:border-[#8B1A6B]/40'}`}
+                            key={bi(item.name)}
+                            onClick={() => setService(bi(item.name))}
+                            className={`text-left px-4 py-3 rounded-xl border text-sm font-body transition-all ${service === bi(item.name) ? 'border-[#8B1A6B] bg-[#8B1A6B]/8 text-[#8B1A6B] font-medium' : 'border-[#E8DDD0] text-[#6B4C3B] hover:border-[#8B1A6B]/40'}`}
                           >
-                            {item}
+                            {bi(item.name)}
                           </button>
                         ))}
                       </div>
@@ -1106,14 +1051,14 @@ function BookPage() {
                 {erreurEnvoi && <p className="text-sm mt-4" style={{ color: '#B23A3A' }}>{erreurEnvoi}</p>}
                 <div className="mt-6 pt-5 border-t border-[#E8DDD0] flex gap-3">
                   <button onClick={() => setStep(1)} className="flex-1 border border-[#E8DDD0] text-[#9E8E7A] font-display font-semibold py-3 rounded-full hover:bg-[#F2EBE0] transition-colors">
-                    Retour
+                    {t('back')}
                   </button>
                   <button
                     onClick={handleConfirmer}
                     disabled={!service || envoiEnCours}
                     className={`flex-1 font-display font-semibold py-3 rounded-full transition-colors ${service ? 'bg-[#8B1A6B] hover:bg-[#6E1356] text-white shadow-md shadow-[#8B1A6B]/20' : 'bg-[#E8DDD0] text-[#9E8E7A] cursor-not-allowed'}`}
                   >
-                    {envoiEnCours ? 'Envoi...' : 'Confirmer la demande ✓'}
+                    {envoiEnCours ? t('sending') : t('confirmRequest')}
                   </button>
                 </div>
               </div>
@@ -1122,8 +1067,8 @@ function BookPage() {
             {envoye && (
               <div className="text-center py-10">
                 <div className="text-4xl mb-3">🌿</div>
-                <p className="font-display font-semibold text-lg text-[#8B1A6B] mb-1">Merci !</p>
-                <p className="font-body text-sm text-[#6B4C3B]">Votre demande a bien été reçue. Nous vous recontactons très vite pour confirmer votre rendez-vous.</p>
+                <p className="font-display font-semibold text-lg text-[#8B1A6B] mb-1">{t('thankYou')}</p>
+                <p className="font-body text-sm text-[#6B4C3B]">{t('bookSuccessText')}</p>
               </div>
             )}
           </div>
@@ -1142,6 +1087,15 @@ export default function App() {
     return <AdminPage />
   }
 
+  return (
+    <LangProvider>
+      <SiteShell />
+    </LangProvider>
+  )
+}
+
+function SiteShell() {
+  const { lang } = useLang()
   const [page, setPage] = useState<Page>('home')
 
   const renderPage = () => {
@@ -1157,7 +1111,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div dir={lang === 'AR' ? 'rtl' : 'ltr'} className="flex flex-col min-h-screen">
       <Header currentPage={page} onNav={p => { setPage(p); window.scrollTo(0, 0) }} />
       <main className="flex-1">{renderPage()}</main>
       <Footer onNav={p => { setPage(p); window.scrollTo(0, 0) }} />
