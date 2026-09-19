@@ -1,0 +1,112 @@
+@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Raleway:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap');
+@import 'tailwindcss';
+
+@theme {
+  --color-cream: #FAF6F0;
+  --color-cream-dark: #F2EBE0;
+  --color-magenta: #8B1A6B;
+  --color-magenta-deep: #6E1356;
+  --color-magenta-light: #C4538A;
+  --color-gold: #C9A96E;
+  --color-gold-light: #E8D5A8;
+  --color-warm-dark: #2C1810;
+  --color-warm-mid: #6B4C3B;
+  --color-muted: #9E8E7A;
+  --color-border: #E8DDD0;
+}
+
+:root {
+  --font-script: 'Great Vibes', cursive;
+  --font-display: 'Raleway', sans-serif;
+  --font-body: 'Poppins', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #FAF6F0;
+  color: #2C1810;
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-script {
+  font-family: var(--font-script);
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-body {
+  font-family: var(--font-body);
+}
+
+/* Shimmer / pearl texture on section backgrounds */
+.pearl-bg {
+  background-image: radial-gradient(ellipse at 30% 40%, rgba(201, 169, 110, 0.08) 0%, transparent 60%),
+                    radial-gradient(ellipse at 70% 60%, rgba(139, 26, 107, 0.06) 0%, transparent 60%);
+}
+
+/* Gold hairline divider */
+.divider-gold {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #C9A96E, transparent);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #FAF6F0; }
+::-webkit-scrollbar-thumb { background: #C9A96E; border-radius: 3px; }
+
+/* Form inputs */
+input, textarea, select {
+  font-family: var(--font-body);
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: #8B1A6B !important;
+  box-shadow: 0 0 0 2px rgba(139, 26, 107, 0.12);
+}
+
+/* Nav link hover */
+.nav-link {
+  position: relative;
+  transition: color 0.2s;
+}
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: #C9A96E;
+  transition: width 0.25s ease;
+}
+.nav-link:hover::after,
+.nav-link.active::after {
+  width: 100%;
+}
+
+/* Card hover */
+.card-hover {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(139, 26, 107, 0.12);
+}
+
+/* Botanical leaf SVG decoration */
+.leaf-decoration {
+  opacity: 0.12;
+  pointer-events: none;
+}
