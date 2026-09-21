@@ -182,10 +182,10 @@ function Footer({ onNav }: { onNav: (p: Page) => void }) {
             {t('footerTagline')}
           </p>
           <div className="flex gap-3 mt-5">
-            <a href="#" aria-label="Facebook" className="w-9 h-9 rounded-full border border-[#C9A96E]/40 flex items-center justify-center hover:bg-[#C9A96E]/20 transition-colors">
+            <a href="https://www.facebook.com/DR.Esthetic.sba/?locale=fr_FR" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="w-9 h-9 rounded-full border border-[#C9A96E]/40 flex items-center justify-center hover:bg-[#C9A96E]/20 transition-colors">
               <svg width="16" height="16" fill="#C9A96E" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
             </a>
-            <a href="#" aria-label="Instagram" className="w-9 h-9 rounded-full border border-[#C9A96E]/40 flex items-center justify-center hover:bg-[#C9A96E]/20 transition-colors">
+            <a href="https://www.instagram.com/cabinet_mon_espoir_/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="w-9 h-9 rounded-full border border-[#C9A96E]/40 flex items-center justify-center hover:bg-[#C9A96E]/20 transition-colors">
               <svg width="16" height="16" fill="none" stroke="#C9A96E" strokeWidth="1.5" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="#C9A96E"/></svg>
             </a>
           </div>
@@ -209,11 +209,11 @@ function Footer({ onNav }: { onNav: (p: Page) => void }) {
             </li>
             <li className="flex items-start gap-2">
               <svg width="16" height="16" fill="none" stroke="#C9A96E" strokeWidth="1.5" viewBox="0 0 24 24" className="mt-0.5 flex-shrink-0"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-              contact@monespoir.dz
+              dr.esthetic.sba@gmail.com
             </li>
             <li className="flex items-start gap-2">
               <svg width="16" height="16" fill="none" stroke="#C9A96E" strokeWidth="1.5" viewBox="0 0 24 24" className="mt-0.5 flex-shrink-0"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              {t('footerAddress')}
+              <a href="https://maps.app.goo.gl/bZib7vZ8DbbYuECQ9" target="_blank" rel="noopener noreferrer" className="hover:text-[#C9A96E] transition-colors">{t('footerAddress')}</a>
             </li>
           </ul>
         </div>
@@ -788,7 +788,7 @@ function ContactPage() {
     {
       icon: <svg width="20" height="20" fill="none" stroke="#8B1A6B" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>,
       title: t('labelEmail'),
-      content: 'contact@monespoir.dz',
+      content: 'dr.esthetic.sba@gmail.com',
       sub: t('emailUsSub'),
     },
     {
@@ -878,23 +878,23 @@ function ContactPage() {
             </div>
           ))}
 
-          {/* Map placeholder */}
-          <div className="rounded-2xl overflow-hidden border border-[#E8DDD0] shadow-sm bg-[#E8DDD0] aspect-video flex items-center justify-center relative">
+          {/* Map */}
+          <a href="https://maps.app.goo.gl/bZib7vZ8DbbYuECQ9" target="_blank" rel="noopener noreferrer" className="rounded-2xl overflow-hidden border border-[#E8DDD0] shadow-sm bg-[#E8DDD0] aspect-video flex items-center justify-center relative hover:opacity-90 transition-opacity">
             <div className="text-center">
               <svg width="32" height="32" fill="none" stroke="#8B1A6B" strokeWidth="1.5" viewBox="0 0 24 24" className="mx-auto mb-2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
               <p className="font-body text-xs text-[#9E8E7A]">{t('interactiveMap')}</p>
             </div>
-          </div>
+          </a>
 
           {/* Social */}
           <div className="bg-white rounded-2xl p-5 border border-[#E8DDD0] shadow-sm">
             <p className="font-display font-semibold text-sm text-[#2C1810] mb-3">{t('followUs')}</p>
             <div className="flex gap-3">
-              <a href="#" className="flex-1 flex items-center justify-center gap-2 border border-[#E8DDD0] rounded-xl py-2.5 hover:bg-[#8B1A6B]/5 transition-colors group">
+              <a href="https://www.facebook.com/DR.Esthetic.sba/?locale=fr_FR" target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-2 border border-[#E8DDD0] rounded-xl py-2.5 hover:bg-[#8B1A6B]/5 transition-colors group">
                 <svg width="16" height="16" fill="#8B1A6B" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
                 <span className="font-display text-xs font-semibold text-[#6B4C3B]">Facebook</span>
               </a>
-              <a href="#" className="flex-1 flex items-center justify-center gap-2 border border-[#E8DDD0] rounded-xl py-2.5 hover:bg-[#8B1A6B]/5 transition-colors">
+              <a href="https://www.instagram.com/cabinet_mon_espoir_/" target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-2 border border-[#E8DDD0] rounded-xl py-2.5 hover:bg-[#8B1A6B]/5 transition-colors">
                 <svg width="16" height="16" fill="none" stroke="#8B1A6B" strokeWidth="1.5" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="#8B1A6B"/></svg>
                 <span className="font-display text-xs font-semibold text-[#6B4C3B]">Instagram</span>
               </a>
