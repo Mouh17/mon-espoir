@@ -25,7 +25,7 @@ const dict = {
   footerTagline: { fr: 'Médecine morpho-esthétique, anti-âge & laser-thérapie. Dr. Mobesser Esma', ar: 'طب التجميل الشكلي، مكافحة الشيخوخة والعلاج بالليزر. د. مبصر أسماء' },
   footerQuickLinks: { fr: 'Liens rapides', ar: 'روابط سريعة' },
   footerContact: { fr: 'Contact', ar: 'اتصل بنا' },
-  footerAddress: { fr: 'Alger, Algérie', ar: 'الجزائر العاصمة، الجزائر' },
+  footerAddress: { fr: 'Sidi Bel Abbès, Algérie', ar: 'سيدي بلعباس، الجزائر' },
   footerRights: { fr: '© 2024 Mon Espoir · Tous droits réservés', ar: '© 2024 مون إسبوار · جميع الحقوق محفوظة' },
 
   // Home
@@ -223,7 +223,7 @@ export const packagesData: {
 
 export const contactInfoData: { titleKey: DictKey; content: string; subKey: DictKey }[] = [
   { titleKey: 'callUs', content: '0699 99 20 07', subKey: 'callUsHours' },
-  { titleKey: 'labelEmail', content: 'contact@monespoir.dz', subKey: 'emailUsSub' },
+  { titleKey: 'labelEmail', content: 'dr.esthetic.sba@gmail.com', subKey: 'emailUsSub' },
   { titleKey: 'ourAddress', content: '', subKey: 'addressSub' }, // content translated via footerAddress
 ]
 
