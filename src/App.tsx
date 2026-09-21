@@ -879,12 +879,18 @@ function ContactPage() {
           ))}
 
           {/* Map */}
-          <a href="https://maps.app.goo.gl/bZib7vZ8DbbYuECQ9" target="_blank" rel="noopener noreferrer" className="rounded-2xl overflow-hidden border border-[#E8DDD0] shadow-sm bg-[#E8DDD0] aspect-video flex items-center justify-center relative hover:opacity-90 transition-opacity">
-            <div className="text-center">
-              <svg width="32" height="32" fill="none" stroke="#8B1A6B" strokeWidth="1.5" viewBox="0 0 24 24" className="mx-auto mb-2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              <p className="font-body text-xs text-[#9E8E7A]">{t('interactiveMap')}</p>
-            </div>
-          </a>
+          <div className="rounded-2xl overflow-hidden border border-[#E8DDD0] shadow-sm aspect-video relative">
+            <iframe
+              title="Localisation Mon Espoir"
+              src="https://www.google.com/maps?q=35.2125356,-0.6260135&z=16&output=embed"
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              className="absolute inset-0 w-full h-full"
+            />
+          </div>
 
           {/* Social */}
           <div className="bg-white rounded-2xl p-5 border border-[#E8DDD0] shadow-sm">
@@ -1019,7 +1025,7 @@ function BookPage() {
                 </div>
                 <div>
                   <label className="font-display text-xs font-semibold tracking-wider text-[#9E8E7A] uppercase block mb-1.5">{t('labelAvailability')}</label>
-                  <input type="date" {...champ('date')} className="w-full border border-[#E8DDD0] rounded-xl px-4 py-3 text-sm font-body bg-[#FAF6F0] text-[#6B4C3B]" />
+                  <input type="date" min={new Date().toISOString().split('T')[0]} {...champ('date')} className="w-full border border-[#E8DDD0] rounded-xl px-4 py-3 text-sm font-body bg-[#FAF6F0] text-[#6B4C3B]" />
                 </div>
                 <button type="submit" className="w-full bg-[#8B1A6B] hover:bg-[#6E1356] text-white font-display font-semibold py-3.5 rounded-full transition-colors shadow-md shadow-[#8B1A6B]/20 flex items-center justify-center gap-2">
                   {t('nextStep')} <span className="text-lg">→</span>
