@@ -1,16 +1,20 @@
 import { useState } from 'react'
 import AdminPage from './pages/AdminPage'
 import { supabase } from './lib/supabaseClient'
-import { LangProvider, useLang, treatmentItemsData, credentialsData, galleryCasesData, offersData, packagesData } from './lib/i18n'
+import { LangProvider, useLang, treatmentItemsData, credentialsData, galleryCasesData, offersData } from './lib/i18n'
 
 import drEsmaImg from './imports/Mobesser_Esma.jpg'
 import beforeAfterChinImg from './imports/481234830_652878670583573_5156618047632366556_n.jpg'
 import beforeAfterLipsImg from './imports/487455454_670159365522170_6398878267319666788_n.jpg'
 import beforeAfterProfileImg from './imports/594969437_867587595779345_1129263964073090330_n.jpg'
-import promoLumiereImg from './imports/789594424_1091456640059105_6249044475897090736_n.jpg'
-import promoIntimaImg from './imports/789612391_1091456570059112_6178748215899378472_n.jpg'
-import promoDouceurImg from './imports/790301030_1091456590059110_8168561585328786717_n.jpg'
-import promoPeauSoieImg from './imports/791380880_1091456616725774_207929196390399073_n.jpg'
+import packVelours from './imports/pack-velours.jpg'
+import packFeminite from './imports/pack-feminite.jpg'
+import packDouceur from './imports/pack-douceur.jpg'
+import packQueen from './imports/pack-queen.jpg'
+import packLumiere from './imports/pack-lumiere.jpg'
+import packPeauLisse from './imports/pack-peau-lisse.jpg'
+import packIntime from './imports/pack-intime.jpg'
+import packPeauDeSoie from './imports/pack-peau-de-soie.jpg'
 
 type Page = 'home' | 'treatments' | 'about' | 'gallery' | 'pricing' | 'contact' | 'book'
 
@@ -646,10 +650,14 @@ function GalleryPage() {
 function PricingPage({ onNav }: { onNav: (p: Page) => void }) {
   const { t, bi } = useLang()
   const packages = [
-    { name: 'Clarity Lumière', img: promoLumiereImg, highlight: true, ...packagesData[0] },
-    { name: 'Clarity Intima', img: promoIntimaImg, highlight: false, ...packagesData[1] },
-    { name: 'Clarity Douceur', img: promoDouceurImg, highlight: false, ...packagesData[2] },
-    { name: 'Clarity Peau de Soie', img: promoPeauSoieImg, highlight: false, ...packagesData[3] },
+    { name: 'Pack velours', img: packVelours },
+    { name: 'Pack féminité', img: packFeminite },
+    { name: 'Pack douceur', img: packDouceur },
+    { name: 'Pack Queen', img: packQueen },
+    { name: 'Pack lumière', img: packLumiere },
+    { name: 'Pack peau lisse', img: packPeauLisse },
+    { name: 'Pack intime', img: packIntime },
+    { name: 'Pack peau de soie', img: packPeauDeSoie },
   ]
 
   return (
@@ -674,52 +682,19 @@ function PricingPage({ onNav }: { onNav: (p: Page) => void }) {
           <p className="font-body text-sm text-[#9E8E7A] mb-8">{t('packagesSubtitle')}</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mb-14">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-14">
           {packages.map(pkg => (
             <div
               key={pkg.name}
-              className={`card-hover relative rounded-2xl border flex flex-col overflow-hidden ${pkg.highlight ? 'border-[#8B1A6B] shadow-xl shadow-[#8B1A6B]/30' : 'border-[#E8DDD0] shadow-sm'}`}
+              className="card-hover relative rounded-2xl border border-[#E8DDD0] shadow-sm flex flex-col overflow-hidden bg-white"
             >
-              {pkg.badge && (
-                <span className={`absolute top-3 right-3 z-10 text-[10px] font-display font-bold tracking-wider px-2.5 py-1 rounded-full shadow ${pkg.highlight ? 'bg-[#C9A96E] text-[#2C1810]' : 'bg-[#8B1A6B] text-white'}`}>
-                  {bi(pkg.badge)}
-                </span>
-              )}
-              {/* Promo image */}
-              <div className="aspect-square w-full overflow-hidden bg-[#F2EBE0]">
-                <img src={pkg.img} alt={`Forfait ${pkg.name}`} className="w-full h-full object-cover" />
+              <div className="aspect-[4/5] w-full overflow-hidden bg-[#F2EBE0]">
+                <img src={pkg.img} alt={pkg.name} className="w-full h-full object-cover" />
               </div>
-              <div className={`p-5 flex flex-col flex-1 ${pkg.highlight ? 'bg-[#8B1A6B]' : 'bg-white'}`}>
-                <div className={`text-xs font-display font-semibold tracking-wider uppercase mb-1 ${pkg.highlight ? 'text-[#F5E6C8]/70' : 'text-[#C9A96E]'}`}>
-                  {bi(pkg.subtitle)}
-                </div>
-                <h3 style={{ fontFamily: "'Great Vibes', cursive" }} className={`text-3xl mb-4 ${pkg.highlight ? 'text-[#F5E6C8]' : 'text-[#8B1A6B]'}`}>
-                  {pkg.name}
-                </h3>
-                <div className={`text-[10px] font-display font-semibold tracking-wider uppercase mb-2 ${pkg.highlight ? 'text-[#F5E6C8]/60' : 'text-[#9E8E7A]'}`}>
-                  {t('zonesIncluded')}
-                </div>
-                <ul className="space-y-1.5 mb-4 flex-1">
-                  {pkg.zones.map(z => (
-                    <li key={bi(z)} className={`flex items-center gap-2 text-sm font-body ${pkg.highlight ? 'text-[#F5E6C8]/90' : 'text-[#6B4C3B]'}`}>
-                      <svg width="12" height="12" fill="none" stroke={pkg.highlight ? '#C9A96E' : '#8B1A6B'} strokeWidth="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-                      {bi(z)}
-                    </li>
-                  ))}
-                </ul>
-                {pkg.offert.length > 0 && (
-                  <div className={`rounded-xl p-3 mb-4 ${pkg.highlight ? 'bg-[#F5E6C8]/10' : 'bg-[#8B1A6B]/5'}`}>
-                    <p className="text-[10px] font-display font-bold tracking-wider uppercase mb-1.5 text-[#C9A96E]">
-                      {t('freeGift')}
-                    </p>
-                    {pkg.offert.map(o => (
-                      <p key={bi(o)} className={`text-xs font-body ${pkg.highlight ? 'text-[#F5E6C8]/80' : 'text-[#6B4C3B]'}`}>· {bi(o)}</p>
-                    ))}
-                  </div>
-                )}
+              <div className="p-4">
                 <button
                   onClick={() => { onNav('book'); window.scrollTo(0,0) }}
-                  className={`w-full py-3 rounded-full font-display font-semibold text-sm transition-colors ${pkg.highlight ? 'bg-[#C9A96E] text-[#2C1810] hover:bg-[#b8934d]' : 'border border-[#8B1A6B] text-[#8B1A6B] hover:bg-[#8B1A6B] hover:text-white'}`}
+                  className="w-full py-2.5 rounded-full font-display font-semibold text-sm border border-[#8B1A6B] text-[#8B1A6B] hover:bg-[#8B1A6B] hover:text-white transition-colors"
                 >
                   {t('bookThisPackage')}
                 </button>
