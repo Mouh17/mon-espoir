@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import AdminPage from './pages/AdminPage'
 import { supabase } from './lib/supabaseClient'
 import { LangProvider, useLang, treatmentItemsData, credentialsData, galleryCasesData, offersData } from './lib/i18n'
@@ -647,18 +647,33 @@ function GalleryPage() {
 
 // ─── Page: Pricing ─────────────────────────────────────────────────────────
 
+// Packs affichés par défaut tant que le cabinet n'a encore rien ajouté depuis /admin
+const packsParDefaut = [
+  { id: 'default-1', name: 'Pack velours', img: packVelours },
+  { id: 'default-2', name: 'Pack féminité', img: packFeminite },
+  { id: 'default-3', name: 'Pack douceur', img: packDouceur },
+  { id: 'default-4', name: 'Pack Queen', img: packQueen },
+  { id: 'default-5', name: 'Pack lumière', img: packLumiere },
+  { id: 'default-6', name: 'Pack peau lisse', img: packPeauLisse },
+  { id: 'default-7', name: 'Pack intime', img: packIntime },
+  { id: 'default-8', name: 'Pack peau de soie', img: packPeauDeSoie },
+]
+
 function PricingPage({ onNav }: { onNav: (p: Page) => void }) {
-  const { t, bi } = useLang()
-  const packages = [
-    { name: 'Pack velours', img: packVelours },
-    { name: 'Pack féminité', img: packFeminite },
-    { name: 'Pack douceur', img: packDouceur },
-    { name: 'Pack Queen', img: packQueen },
-    { name: 'Pack lumière', img: packLumiere },
-    { name: 'Pack peau lisse', img: packPeauLisse },
-    { name: 'Pack intime', img: packIntime },
-    { name: 'Pack peau de soie', img: packPeauDeSoie },
-  ]
+  const { t } = useLang()
+  const [packages, setPackages] = useState<{ id: string; name: string; img: string }[]>(packsParDefaut)
+
+  useEffect(() => {
+    supabase
+      .from('packs')
+      .select('id, image_url')
+      .order('ordre', { ascending: true })
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          setPackages(data.map(p => ({ id: p.id, name: 'Pack', img: p.image_url })))
+        }
+      })
+  }, [])
 
   return (
     <div className="min-h-screen">
@@ -685,7 +700,7 @@ function PricingPage({ onNav }: { onNav: (p: Page) => void }) {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-14">
           {packages.map(pkg => (
             <div
-              key={pkg.name}
+              key={pkg.id}
               className="card-hover relative rounded-2xl border border-[#E8DDD0] shadow-sm flex flex-col overflow-hidden bg-white"
             >
               <div className="aspect-[4/5] w-full overflow-hidden bg-[#F2EBE0]">
