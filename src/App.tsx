@@ -666,11 +666,11 @@ function PricingPage({ onNav }: { onNav: (p: Page) => void }) {
   useEffect(() => {
     supabase
       .from('packs')
-      .select('id, image_url')
+      .select('id, nom, image_url')
       .order('ordre', { ascending: true })
       .then(({ data }) => {
         if (data && data.length > 0) {
-          setPackages(data.map(p => ({ id: p.id, name: 'Pack', img: p.image_url })))
+          setPackages(data.map(p => ({ id: p.id, name: p.nom, img: p.image_url })))
         }
       })
   }, [])
@@ -912,6 +912,19 @@ function BookPage() {
   const [envoiEnCours, setEnvoiEnCours] = useState(false)
   const [erreurEnvoi, setErreurEnvoi] = useState('')
   const [envoye, setEnvoye] = useState(false)
+  const [packs, setPacks] = useState<{ id: string; name: string; img: string }[]>(packsParDefaut)
+
+  useEffect(() => {
+    supabase
+      .from('packs')
+      .select('id, nom, image_url')
+      .order('ordre', { ascending: true })
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          setPacks(data.map(p => ({ id: p.id, name: p.nom, img: p.image_url })))
+        }
+      })
+  }, [])
 
   const champ = (k: keyof typeof form) => ({
     value: form[k],
@@ -1027,6 +1040,25 @@ function BookPage() {
               <div>
                 <p className="font-body text-sm text-[#6B4C3B] mb-6">{t('chooseServiceIntro')}</p>
                 <div className="space-y-5">
+                  <div>
+                    <p className="font-display text-xs font-bold tracking-wider text-[#C9A96E] uppercase mb-2">{t('catPacks')}</p>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                      {packs.map(pkg => (
+                        <button
+                          key={pkg.id}
+                          onClick={() => setService(pkg.name)}
+                          className={`rounded-xl border overflow-hidden text-left transition-all ${service === pkg.name ? 'border-[#8B1A6B] ring-2 ring-[#8B1A6B]/30' : 'border-[#E8DDD0] hover:border-[#8B1A6B]/40'}`}
+                        >
+                          <div className="aspect-[4/5] bg-[#F2EBE0]">
+                            <img src={pkg.img} alt={pkg.name} className="w-full h-full object-cover" />
+                          </div>
+                          <p className={`text-[11px] font-body px-2 py-1.5 leading-tight ${service === pkg.name ? 'text-[#8B1A6B] font-medium' : 'text-[#6B4C3B]'}`}>
+                            {pkg.name}
+                          </p>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                   {services.map(sc => (
                     <div key={sc.cat}>
                       <p className="font-display text-xs font-bold tracking-wider text-[#C9A96E] uppercase mb-2">{sc.cat}</p>

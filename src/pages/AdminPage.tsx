@@ -26,6 +26,7 @@ type MessageContact = {
 
 type Pack = {
   id: string
+  nom: string
   image_url: string
   storage_path: string
   ordre: number
@@ -68,6 +69,7 @@ export default function AdminPage() {
   const [chargementDonnees, setChargementDonnees] = useState(false)
   const [uploadEnCours, setUploadEnCours] = useState(false)
   const [erreurPack, setErreurPack] = useState('')
+  const [nouveauNomPack, setNouveauNomPack] = useState('')
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -100,6 +102,10 @@ export default function AdminPage() {
     const fichier = e.target.files?.[0]
     e.target.value = ''
     if (!fichier) return
+    if (!nouveauNomPack.trim()) {
+      setErreurPack("Donne d'abord un nom au pack (ex: Pack féminité) avant de choisir l'image.")
+      return
+    }
     setErreurPack('')
     setUploadEnCours(true)
 
@@ -115,6 +121,7 @@ export default function AdminPage() {
     const ordreMax = packs.length > 0 ? Math.max(...packs.map(p => p.ordre)) : 0
 
     const { error: erreurInsert } = await supabase.from('packs').insert({
+      nom: nouveauNomPack.trim(),
       image_url: urlData.publicUrl,
       storage_path: chemin,
       ordre: ordreMax + 1,
@@ -122,9 +129,17 @@ export default function AdminPage() {
     if (erreurInsert) {
       setErreurPack("Échec de l'enregistrement du pack. Réessaie.")
     } else {
+      setNouveauNomPack('')
       await chargerDonnees()
     }
     setUploadEnCours(false)
+  }
+
+  async function handleRenommerPack(pack: Pack, nouveauNom: string) {
+    const nom = nouveauNom.trim()
+    if (!nom || nom === pack.nom) return
+    await supabase.from('packs').update({ nom }).eq('id', pack.id)
+    setPacks(prev => prev.map(p => (p.id === pack.id ? { ...p, nom } : p)))
   }
 
   async function handleSupprimerPack(pack: Pack) {
@@ -221,8 +236,9 @@ export default function AdminPage() {
         ) : onglet === 'packs' ? (
           <div>
             <p style={{ fontSize: '13px', color: texteMuted, marginBottom: '16px' }}>
-              Ajoute une image par pack (prix et détails déjà écrits dessus). Elle apparaît directement sur la page Tarifs du site.
-              Utilise les flèches pour changer l'ordre d'affichage.
+              Ajoute une image par pack (prix et détails déjà écrits dessus) et donne-lui un nom. Il apparaît sur la page Tarifs
+              et devient sélectionnable quand une cliente prend RDV. Utilise les flèches pour changer l'ordre d'affichage,
+              et clique sur le nom pour le modifier.
             </p>
             {erreurPack && <p style={{ color: '#B23A3A', fontSize: '13px', marginBottom: '14px' }}>{erreurPack}</p>}
 
@@ -230,9 +246,14 @@ export default function AdminPage() {
               {packs.map((pack, i) => (
                 <div key={pack.id} style={{ border: `1px solid ${bordure}`, borderRadius: '14px', overflow: 'hidden', backgroundColor: 'white' }}>
                   <div style={{ aspectRatio: '4 / 5', backgroundColor: '#F2EBE0' }}>
-                    <img src={pack.image_url} alt="Pack" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                    <img src={pack.image_url} alt={pack.nom} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px' }}>
+                  <input
+                    defaultValue={pack.nom}
+                    onBlur={e => handleRenommerPack(pack, e.target.value)}
+                    style={{ width: '100%', border: 'none', borderTop: `1px solid ${bordure}`, padding: '8px 10px', fontSize: '13px', fontWeight: 600, color: texte, backgroundColor: 'transparent' }}
+                  />
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 10px 8px' }}>
                     <div style={{ display: 'flex', gap: '4px' }}>
                       <button onClick={() => handleDeplacerPack(pack, 'haut')} disabled={i === 0}
                         style={{ border: `1px solid ${bordure}`, background: 'white', borderRadius: '8px', width: '28px', height: '28px', cursor: i === 0 ? 'default' : 'pointer', opacity: i === 0 ? 0.3 : 1 }}>
@@ -251,14 +272,20 @@ export default function AdminPage() {
                 </div>
               ))}
 
-              <label style={{
-                border: `2px dashed ${bordure}`, borderRadius: '14px', aspectRatio: '4 / 5',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column',
-                cursor: uploadEnCours ? 'default' : 'pointer', color: texteMuted, fontSize: '13px', textAlign: 'center', padding: '12px',
-              }}>
-                {uploadEnCours ? 'Envoi en cours...' : <>＋<br />Ajouter un pack</>}
-                <input type="file" accept="image/*" onChange={handleAjouterPack} disabled={uploadEnCours} style={{ display: 'none' }} />
-              </label>
+              <div style={{ border: `2px dashed ${bordure}`, borderRadius: '14px', aspectRatio: '4 / 5', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '14px' }}>
+                <input
+                  type="text"
+                  placeholder="Nom du pack"
+                  value={nouveauNomPack}
+                  onChange={e => setNouveauNomPack(e.target.value)}
+                  disabled={uploadEnCours}
+                  style={{ width: '100%', border: `1px solid ${bordure}`, borderRadius: '8px', padding: '8px 10px', fontSize: '13px', textAlign: 'center' }}
+                />
+                <label style={{ color: rose, fontSize: '13px', textAlign: 'center', cursor: uploadEnCours ? 'default' : 'pointer', fontWeight: 600 }}>
+                  {uploadEnCours ? 'Envoi en cours...' : <>＋ Choisir l'image</>}
+                  <input type="file" accept="image/*" onChange={handleAjouterPack} disabled={uploadEnCours} style={{ display: 'none' }} />
+                </label>
+              </div>
             </div>
           </div>
         ) : onglet === 'rdv' ? (

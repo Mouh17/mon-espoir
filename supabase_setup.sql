@@ -39,10 +39,11 @@ create policy "Autoriser lecture authentifiée rdv" on rendez_vous
 create policy "Autoriser lecture authentifiée messages" on messages_contact
   for select to authenticated using (true);
 
--- Table des packs promo affichés sur la page Tarifs (gérée depuis /admin)
+-- Table des packs promo affichés sur la page Tarifs et sélectionnables à la prise de RDV (gérée depuis /admin)
 create table packs (
   id uuid primary key default gen_random_uuid(),
   created_at timestamp with time zone default now(),
+  nom text not null default 'Pack',
   image_url text not null,
   storage_path text not null,
   ordre integer not null default 0
@@ -80,3 +81,6 @@ create policy "Upload authentifié images packs" on storage.objects
 
 create policy "Suppression authentifiée images packs" on storage.objects
   for delete to authenticated using (bucket_id = 'packs');
+
+-- Si la table "packs" existait déjà avant l'ajout de la colonne "nom", exécute juste cette ligne :
+-- alter table packs add column if not exists nom text not null default 'Pack';
