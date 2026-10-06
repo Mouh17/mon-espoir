@@ -909,6 +909,7 @@ function BookPage() {
   const [step, setStep] = useState(1)
   const [form, setForm] = useState({ prenom: '', nom: '', telephone: '', email: '', date: '' })
   const [service, setService] = useState<string | null>(null)
+  const [servicePackId, setServicePackId] = useState<string | null>(null)
   const [envoiEnCours, setEnvoiEnCours] = useState(false)
   const [erreurEnvoi, setErreurEnvoi] = useState('')
   const [envoye, setEnvoye] = useState(false)
@@ -1046,13 +1047,13 @@ function BookPage() {
                       {packs.map(pkg => (
                         <button
                           key={pkg.id}
-                          onClick={() => setService(pkg.name)}
-                          className={`rounded-xl border overflow-hidden text-left transition-all ${service === pkg.name ? 'border-[#8B1A6B] ring-2 ring-[#8B1A6B]/30' : 'border-[#E8DDD0] hover:border-[#8B1A6B]/40'}`}
+                          onClick={() => { setService(pkg.name); setServicePackId(pkg.id) }}
+                          className={`rounded-xl border overflow-hidden text-left transition-all ${servicePackId === pkg.id ? 'border-[#8B1A6B] ring-2 ring-[#8B1A6B]/30' : 'border-[#E8DDD0] hover:border-[#8B1A6B]/40'}`}
                         >
                           <div className="aspect-[4/5] bg-[#F2EBE0]">
                             <img src={pkg.img} alt={pkg.name} className="w-full h-full object-cover" />
                           </div>
-                          <p className={`text-[11px] font-body px-2 py-1.5 leading-tight ${service === pkg.name ? 'text-[#8B1A6B] font-medium' : 'text-[#6B4C3B]'}`}>
+                          <p className={`text-[11px] font-body px-2 py-1.5 leading-tight ${servicePackId === pkg.id ? 'text-[#8B1A6B] font-medium' : 'text-[#6B4C3B]'}`}>
                             {pkg.name}
                           </p>
                         </button>
@@ -1066,7 +1067,7 @@ function BookPage() {
                         {sc.items.map(item => (
                           <button
                             key={bi(item.name)}
-                            onClick={() => setService(bi(item.name))}
+                            onClick={() => { setService(bi(item.name)); setServicePackId(null) }}
                             className={`text-left px-4 py-3 rounded-xl border text-sm font-body transition-all ${service === bi(item.name) ? 'border-[#8B1A6B] bg-[#8B1A6B]/8 text-[#8B1A6B] font-medium' : 'border-[#E8DDD0] text-[#6B4C3B] hover:border-[#8B1A6B]/40'}`}
                           >
                             {bi(item.name)}
