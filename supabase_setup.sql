@@ -84,3 +84,10 @@ create policy "Suppression authentifiée images packs" on storage.objects
 
 -- Si la table "packs" existait déjà avant l'ajout de la colonne "nom", exécute juste cette ligne :
 -- alter table packs add column if not exists nom text not null default 'Pack';
+
+-- Suppression des rendez-vous et messages depuis /admin
+create policy "Suppression authentifiée rdv" on rendez_vous
+  for delete to authenticated using (true);
+
+create policy "Suppression authentifiée messages" on messages_contact
+  for delete to authenticated using (true);

@@ -126,6 +126,7 @@ const dict = {
   catMorpho: { fr: 'Morpho-esthétique', ar: 'التجميل الشكلي' },
   catAntiAge: { fr: 'Anti-âge', ar: 'مكافحة الشيخوخة' },
   catLaser: { fr: 'Laser-thérapie', ar: 'العلاج بالليزر' },
+  catPacks: { fr: 'Nos packs', ar: 'باقاتنا' },
   catMorphoDesc: { fr: 'Remodelage du visage et du corps par des techniques non-invasives adaptées à votre morphologie unique.', ar: 'نحت الوجه والجسم بتقنيات غير جراحية تتناسب مع شكل جسمك الفريد.' },
   catAntiAgeDesc: { fr: 'Traitements de pointe pour atténuer les rides, restaurer la fermeté et retrouver un teint lumineux.', ar: 'علاجات متطورة لتخفيف التجاعيد واستعادة نضارة ومرونة البشرة.' },
   catLaserDesc: { fr: 'Épilation définitive et traitements cutanés par laser Clarity de dernière génération.', ar: 'إزالة الشعر نهائيًا وعلاجات جلدية بتقنية الليزر Clarity من الجيل الأحدث.' },

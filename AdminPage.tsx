@@ -24,6 +24,14 @@ type MessageContact = {
   message: string | null
 }
 
+type Pack = {
+  id: string
+  nom: string
+  image_url: string
+  storage_path: string
+  ordre: number
+}
+
 const rose = '#8B1A6B'
 const or = '#C9A96E'
 const creme = '#FAF6F0'
@@ -54,10 +62,14 @@ export default function AdminPage() {
   const [erreurConnexion, setErreurConnexion] = useState('')
   const [connexionEnCours, setConnexionEnCours] = useState(false)
 
-  const [onglet, setOnglet] = useState<'rdv' | 'messages'>('rdv')
+  const [onglet, setOnglet] = useState<'rdv' | 'messages' | 'packs'>('rdv')
   const [rendezVous, setRendezVous] = useState<RendezVous[]>([])
   const [messages, setMessages] = useState<MessageContact[]>([])
+  const [packs, setPacks] = useState<Pack[]>([])
   const [chargementDonnees, setChargementDonnees] = useState(false)
+  const [uploadEnCours, setUploadEnCours] = useState(false)
+  const [erreurPack, setErreurPack] = useState('')
+  const [nouveauNomPack, setNouveauNomPack] = useState('')
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -75,13 +87,93 @@ export default function AdminPage() {
 
   async function chargerDonnees() {
     setChargementDonnees(true)
-    const [rdvRes, msgRes] = await Promise.all([
+    const [rdvRes, msgRes, packsRes] = await Promise.all([
       supabase.from('rendez_vous').select('*').order('created_at', { ascending: false }),
       supabase.from('messages_contact').select('*').order('created_at', { ascending: false }),
+      supabase.from('packs').select('*').order('ordre', { ascending: true }),
     ])
     if (rdvRes.data) setRendezVous(rdvRes.data as RendezVous[])
     if (msgRes.data) setMessages(msgRes.data as MessageContact[])
+    if (packsRes.data) setPacks(packsRes.data as Pack[])
     setChargementDonnees(false)
+  }
+
+  async function handleAjouterPack(e: React.ChangeEvent<HTMLInputElement>) {
+    const fichier = e.target.files?.[0]
+    e.target.value = ''
+    if (!fichier) return
+    if (!nouveauNomPack.trim()) {
+      setErreurPack("Donne d'abord un nom au pack (ex: Pack féminité) avant de choisir l'image.")
+      return
+    }
+    setErreurPack('')
+    setUploadEnCours(true)
+
+    const chemin = `${Date.now()}-${fichier.name.replace(/\s+/g, '-')}`
+    const { error: erreurUpload } = await supabase.storage.from('packs').upload(chemin, fichier)
+    if (erreurUpload) {
+      setErreurPack("Échec de l'envoi de l'image. Réessaie.")
+      setUploadEnCours(false)
+      return
+    }
+
+    const { data: urlData } = supabase.storage.from('packs').getPublicUrl(chemin)
+    const ordreMax = packs.length > 0 ? Math.max(...packs.map(p => p.ordre)) : 0
+
+    const { error: erreurInsert } = await supabase.from('packs').insert({
+      nom: nouveauNomPack.trim(),
+      image_url: urlData.publicUrl,
+      storage_path: chemin,
+      ordre: ordreMax + 1,
+    })
+    if (erreurInsert) {
+      setErreurPack("Échec de l'enregistrement du pack. Réessaie.")
+    } else {
+      setNouveauNomPack('')
+      await chargerDonnees()
+    }
+    setUploadEnCours(false)
+  }
+
+  async function handleSupprimerRdv(id: string) {
+    if (!confirm('Supprimer ce rendez-vous ? Cette action est définitive.')) return
+    const { error } = await supabase.from('rendez_vous').delete().eq('id', id)
+    if (!error) setRendezVous(prev => prev.filter(r => r.id !== id))
+    else alert("Suppression impossible. Vérifie que le script SQL de suppression a bien été exécuté dans Supabase.")
+  }
+
+  async function handleSupprimerMessage(id: string) {
+    if (!confirm('Supprimer ce message ? Cette action est définitive.')) return
+    const { error } = await supabase.from('messages_contact').delete().eq('id', id)
+    if (!error) setMessages(prev => prev.filter(m => m.id !== id))
+    else alert("Suppression impossible. Vérifie que le script SQL de suppression a bien été exécuté dans Supabase.")
+  }
+
+  async function handleRenommerPack(pack: Pack, nouveauNom: string) {
+    const nom = nouveauNom.trim()
+    if (!nom || nom === pack.nom) return
+    await supabase.from('packs').update({ nom }).eq('id', pack.id)
+    setPacks(prev => prev.map(p => (p.id === pack.id ? { ...p, nom } : p)))
+  }
+
+  async function handleSupprimerPack(pack: Pack) {
+    if (!confirm('Supprimer ce pack ? Cette action est définitive.')) return
+    await supabase.storage.from('packs').remove([pack.storage_path])
+    await supabase.from('packs').delete().eq('id', pack.id)
+    setPacks(prev => prev.filter(p => p.id !== pack.id))
+  }
+
+  async function handleDeplacerPack(pack: Pack, direction: 'haut' | 'bas') {
+    const index = packs.findIndex(p => p.id === pack.id)
+    const indexVoisin = direction === 'haut' ? index - 1 : index + 1
+    if (indexVoisin < 0 || indexVoisin >= packs.length) return
+    const voisin = packs[indexVoisin]
+
+    await Promise.all([
+      supabase.from('packs').update({ ordre: voisin.ordre }).eq('id', pack.id),
+      supabase.from('packs').update({ ordre: pack.ordre }).eq('id', voisin.id),
+    ])
+    await chargerDonnees()
   }
 
   async function handleLogin(e: React.FormEvent) {
@@ -146,10 +238,70 @@ export default function AdminPage() {
               backgroundColor: onglet === 'messages' ? rose : 'white', color: onglet === 'messages' ? 'white' : texteMuted }}>
             Messages ({messages.length})
           </button>
+          <button onClick={() => setOnglet('packs')}
+            style={{ padding: '10px 20px', borderRadius: '999px', border: 'none', fontSize: '13px', fontWeight: 600, cursor: 'pointer',
+              backgroundColor: onglet === 'packs' ? rose : 'white', color: onglet === 'packs' ? 'white' : texteMuted }}>
+            Packs promo ({packs.length})
+          </button>
         </div>
 
         {chargementDonnees ? (
           <p style={{ color: texteMuted }}>Chargement...</p>
+        ) : onglet === 'packs' ? (
+          <div>
+            <p style={{ fontSize: '13px', color: texteMuted, marginBottom: '16px' }}>
+              Ajoute une image par pack (prix et détails déjà écrits dessus) et donne-lui un nom. Il apparaît sur la page Tarifs
+              et devient sélectionnable quand une cliente prend RDV. Utilise les flèches pour changer l'ordre d'affichage,
+              et clique sur le nom pour le modifier.
+            </p>
+            {erreurPack && <p style={{ color: '#B23A3A', fontSize: '13px', marginBottom: '14px' }}>{erreurPack}</p>}
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '16px' }}>
+              {packs.map((pack, i) => (
+                <div key={pack.id} style={{ border: `1px solid ${bordure}`, borderRadius: '14px', overflow: 'hidden', backgroundColor: 'white' }}>
+                  <div style={{ aspectRatio: '4 / 5', backgroundColor: '#F2EBE0' }}>
+                    <img src={pack.image_url} alt={pack.nom} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                  </div>
+                  <input
+                    defaultValue={pack.nom}
+                    onBlur={e => handleRenommerPack(pack, e.target.value)}
+                    style={{ width: '100%', border: 'none', borderTop: `1px solid ${bordure}`, padding: '8px 10px', fontSize: '13px', fontWeight: 600, color: texte, backgroundColor: 'transparent' }}
+                  />
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 10px 8px' }}>
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                      <button onClick={() => handleDeplacerPack(pack, 'haut')} disabled={i === 0}
+                        style={{ border: `1px solid ${bordure}`, background: 'white', borderRadius: '8px', width: '28px', height: '28px', cursor: i === 0 ? 'default' : 'pointer', opacity: i === 0 ? 0.3 : 1 }}>
+                        ↑
+                      </button>
+                      <button onClick={() => handleDeplacerPack(pack, 'bas')} disabled={i === packs.length - 1}
+                        style={{ border: `1px solid ${bordure}`, background: 'white', borderRadius: '8px', width: '28px', height: '28px', cursor: i === packs.length - 1 ? 'default' : 'pointer', opacity: i === packs.length - 1 ? 0.3 : 1 }}>
+                        ↓
+                      </button>
+                    </div>
+                    <button onClick={() => handleSupprimerPack(pack)}
+                      style={{ border: 'none', background: 'none', color: '#B23A3A', fontSize: '13px', cursor: 'pointer' }}>
+                      Supprimer
+                    </button>
+                  </div>
+                </div>
+              ))}
+
+              <div style={{ border: `2px dashed ${bordure}`, borderRadius: '14px', aspectRatio: '4 / 5', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '14px' }}>
+                <input
+                  type="text"
+                  placeholder="Nom du pack"
+                  value={nouveauNomPack}
+                  onChange={e => setNouveauNomPack(e.target.value)}
+                  disabled={uploadEnCours}
+                  style={{ width: '100%', border: `1px solid ${bordure}`, borderRadius: '8px', padding: '8px 10px', fontSize: '13px', textAlign: 'center' }}
+                />
+                <label style={{ color: rose, fontSize: '13px', textAlign: 'center', cursor: uploadEnCours ? 'default' : 'pointer', fontWeight: 600 }}>
+                  {uploadEnCours ? 'Envoi en cours...' : <>＋ Choisir l'image</>}
+                  <input type="file" accept="image/*" onChange={handleAjouterPack} disabled={uploadEnCours} style={{ display: 'none' }} />
+                </label>
+              </div>
+            </div>
+          </div>
         ) : onglet === 'rdv' ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {rendezVous.length === 0 && <p style={{ color: texteMuted }}>Aucune demande pour l'instant.</p>}
@@ -165,6 +317,12 @@ export default function AdminPage() {
                   {r.date_disponible && <> · 📅 {r.date_disponible}</>}
                 </div>
                 {r.service && <div style={{ fontSize: '13px', marginTop: '6px', color: or }}>{r.service}</div>}
+                <div style={{ textAlign: 'right', marginTop: '8px' }}>
+                  <button onClick={() => handleSupprimerRdv(r.id)}
+                    style={{ border: 'none', background: 'none', color: '#B23A3A', fontSize: '13px', cursor: 'pointer' }}>
+                    Supprimer
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -183,6 +341,12 @@ export default function AdminPage() {
                   {m.objet && <> · {m.objet}</>}
                 </div>
                 {m.message && <p style={{ fontSize: '13px', marginTop: '8px', color: texte }}>{m.message}</p>}
+                <div style={{ textAlign: 'right', marginTop: '8px' }}>
+                  <button onClick={() => handleSupprimerMessage(m.id)}
+                    style={{ border: 'none', background: 'none', color: '#B23A3A', fontSize: '13px', cursor: 'pointer' }}>
+                    Supprimer
+                  </button>
+                </div>
               </div>
             ))}
           </div>
