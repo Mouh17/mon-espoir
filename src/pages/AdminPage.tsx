@@ -135,6 +135,20 @@ export default function AdminPage() {
     setUploadEnCours(false)
   }
 
+  async function handleSupprimerRdv(id: string) {
+    if (!confirm('Supprimer ce rendez-vous ? Cette action est définitive.')) return
+    const { error } = await supabase.from('rendez_vous').delete().eq('id', id)
+    if (!error) setRendezVous(prev => prev.filter(r => r.id !== id))
+    else alert("Suppression impossible. Vérifie que le script SQL de suppression a bien été exécuté dans Supabase.")
+  }
+
+  async function handleSupprimerMessage(id: string) {
+    if (!confirm('Supprimer ce message ? Cette action est définitive.')) return
+    const { error } = await supabase.from('messages_contact').delete().eq('id', id)
+    if (!error) setMessages(prev => prev.filter(m => m.id !== id))
+    else alert("Suppression impossible. Vérifie que le script SQL de suppression a bien été exécuté dans Supabase.")
+  }
+
   async function handleRenommerPack(pack: Pack, nouveauNom: string) {
     const nom = nouveauNom.trim()
     if (!nom || nom === pack.nom) return
@@ -303,6 +317,12 @@ export default function AdminPage() {
                   {r.date_disponible && <> · 📅 {r.date_disponible}</>}
                 </div>
                 {r.service && <div style={{ fontSize: '13px', marginTop: '6px', color: or }}>{r.service}</div>}
+                <div style={{ textAlign: 'right', marginTop: '8px' }}>
+                  <button onClick={() => handleSupprimerRdv(r.id)}
+                    style={{ border: 'none', background: 'none', color: '#B23A3A', fontSize: '13px', cursor: 'pointer' }}>
+                    Supprimer
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -321,6 +341,12 @@ export default function AdminPage() {
                   {m.objet && <> · {m.objet}</>}
                 </div>
                 {m.message && <p style={{ fontSize: '13px', marginTop: '8px', color: texte }}>{m.message}</p>}
+                <div style={{ textAlign: 'right', marginTop: '8px' }}>
+                  <button onClick={() => handleSupprimerMessage(m.id)}
+                    style={{ border: 'none', background: 'none', color: '#B23A3A', fontSize: '13px', cursor: 'pointer' }}>
+                    Supprimer
+                  </button>
+                </div>
               </div>
             ))}
           </div>
